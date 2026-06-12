@@ -1,12 +1,10 @@
 package com.aip.academic_intelligence_platform.auth;
 
 
+import com.aip.academic_intelligence_platform.auth.dto.LoginRequest;
 import com.aip.academic_intelligence_platform.auth.dto.RegisterRequest;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -17,4 +15,12 @@ public class AuthController {
      public String register(@RequestBody RegisterRequest request){
          return authService.register(request);
      }
+
+     @PostMapping("login")
+    public  String login(@RequestBody LoginRequest request){
+         return  authService.login(request);
+     }
+
+
+
 }
