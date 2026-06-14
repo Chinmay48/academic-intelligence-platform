@@ -1,6 +1,7 @@
 package com.aip.academic_intelligence_platform.auth;
 
 
+import com.aip.academic_intelligence_platform.auth.dto.AuthResponse;
 import com.aip.academic_intelligence_platform.auth.dto.LoginRequest;
 import com.aip.academic_intelligence_platform.auth.dto.RegisterRequest;
 import lombok.RequiredArgsConstructor;
@@ -17,7 +18,7 @@ public class AuthController {
      }
 
      @PostMapping("login")
-    public  String login(@RequestBody LoginRequest request){
+    public AuthResponse login(@RequestBody LoginRequest request){
          return  authService.login(request);
      }
 
