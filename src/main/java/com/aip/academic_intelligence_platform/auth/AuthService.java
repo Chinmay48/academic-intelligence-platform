@@ -4,6 +4,8 @@ import com.aip.academic_intelligence_platform.auth.dto.AuthResponse;
 import com.aip.academic_intelligence_platform.auth.dto.LoginRequest;
 import com.aip.academic_intelligence_platform.auth.dto.RegisterRequest;
 
+import com.aip.academic_intelligence_platform.exception.ResourceNotFoundException;
+import com.aip.academic_intelligence_platform.exception.UserAlreadyExistsException;
 import com.aip.academic_intelligence_platform.security.JwtService;
 import com.aip.academic_intelligence_platform.user.User;
 import com.aip.academic_intelligence_platform.user.UserRespository;
@@ -22,7 +24,7 @@ public class AuthService {
     private final JwtService jwtService;
     public String register(RegisterRequest request){
         if(userRespository.existsByEmail(request.getEmail())){
-            throw new RuntimeException("Email already exists");
+            throw new UserAlreadyExistsException("Email already exists");
         }
         User user =new User();
         user.setName(request.getName());
@@ -41,7 +43,7 @@ public class AuthService {
 
         }
         User user=userRespository.findByEmail(request.getEmail())
-                .orElseThrow(()->new RuntimeException("User not found"));
+                .orElseThrow(()->new ResourceNotFoundException("User not found"));
         if(passwordEncoder.matches(request.getPassword(),user.getPassword())){
 
             return new AuthResponse(jwtService.generateToke(user));
