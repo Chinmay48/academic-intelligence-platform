@@ -22,4 +22,9 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ApiResponse> handleGeneralException(Exception ex){
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new ApiResponse(false,ex.getMessage()));
     }
+
+    @ExceptionHandler(DepartmentAlreadyException.class)
+    public  ResponseEntity<ApiResponse> handleDepartmentAlreadyException(DepartmentAlreadyException ex){
+        return  ResponseEntity.status(HttpStatus.CONFLICT).body(new ApiResponse(false,ex.getMessage()));
+    }
 }
