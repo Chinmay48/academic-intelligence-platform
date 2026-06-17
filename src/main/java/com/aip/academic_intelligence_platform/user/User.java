@@ -1,6 +1,7 @@
 package com.aip.academic_intelligence_platform.user;
 
 import com.aip.academic_intelligence_platform.common.enums.Role;
+import com.aip.academic_intelligence_platform.department.Department;
 import jakarta.persistence.*;
 import lombok.Data;
 import org.hibernate.annotations.CreationTimestamp;
@@ -28,6 +29,12 @@ public class User implements UserDetails {
     private Role role;
     @CreationTimestamp
     private LocalDateTime createdAt;
+
+    @ManyToOne
+    @JoinColumn(name = "department_id")
+    private Department department;
+
+    private Integer year;
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {

@@ -23,11 +23,32 @@ public class JwtService {
         return Keys.hmacShaKeyFor(secretKey.getBytes());
     }
     public String generateToke(User user){
+
         return Jwts.builder()
                 .subject(user.getEmail())
-                .claim("role",user.getRole().name())
+                .claim("userId", user.getId())
+                .claim("name", user.getName())
+                .claim("role", user.getRole().name())
+                .claim(
+                        "departmentId",
+                        user.getDepartment() != null
+                                ? user.getDepartment().getId()
+                                : null
+                )
+                .claim(
+                        "departmentName",
+                        user.getDepartment() != null
+                                ? user.getDepartment().getName()
+                                : null
+                )
+                .claim("year", user.getYear())
                 .issuedAt(new Date())
-                .expiration(new Date(System.currentTimeMillis()+jwtExpiration))
+                .expiration(
+                        new Date(
+                                System.currentTimeMillis()
+                                        + jwtExpiration
+                        )
+                )
                 .signWith(getSignKey())
                 .compact();
     }
@@ -41,6 +62,21 @@ public class JwtService {
 
         final  String username=extractUsername(token);
         return username.equals(userDetails.getUsername() )&& !isTokenExpired(token);
+    }
+    public String extractRole(String token){
+
+        return extractAllClaims(token)
+                .get("role", String.class);
+    }
+    public String extractDepartmentId(String token){
+
+        return extractAllClaims(token)
+                .get("departmentId", String.class);
+    }
+    public Integer extractYear(String token){
+
+        return extractAllClaims(token)
+                .get("year", Integer.class);
     }
 
     private Claims extractAllClaims(String token){

@@ -4,6 +4,9 @@ import com.aip.academic_intelligence_platform.auth.dto.AuthResponse;
 import com.aip.academic_intelligence_platform.auth.dto.LoginRequest;
 import com.aip.academic_intelligence_platform.auth.dto.RegisterRequest;
 
+import com.aip.academic_intelligence_platform.common.enums.Role;
+import com.aip.academic_intelligence_platform.department.Department;
+import com.aip.academic_intelligence_platform.department.DepartmentRepository;
 import com.aip.academic_intelligence_platform.exception.ResourceNotFoundException;
 import com.aip.academic_intelligence_platform.exception.UserAlreadyExistsException;
 import com.aip.academic_intelligence_platform.security.JwtService;
@@ -22,19 +25,60 @@ public class AuthService {
     private final UserRespository userRespository;
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
+    private final DepartmentRepository departmentRepository;
     public String register(RegisterRequest request){
-        if(userRespository.existsByEmail(request.getEmail())){
-            throw new UserAlreadyExistsException("Email already exists");
+
+        if(userRespository.existsByEmail(
+                request.getEmail())) {
+
+            throw new UserAlreadyExistsException(
+                    "Email already exists"
+            );
         }
-        User user =new User();
+        if(request.getRole() != Role.ADMIN
+                && request.getDepartmentId()== null){
+
+            throw new RuntimeException(
+                    "Department is required"
+            );
+        }
+        Department department =null;
+        if(request.getRole()!=Role.ADMIN){
+
+                  department=  departmentRepository.findById(
+                                    request.getDepartmentId()
+                            )
+                            .orElseThrow(() ->
+                                    new ResourceNotFoundException(
+                                            "Department not found"
+                                    ));
+        }
+
+
+
+        User user = new User();
+
         user.setName(request.getName());
+
         user.setEmail(request.getEmail());
+
+        user.setPassword(
+                passwordEncoder.encode(
+                        request.getPassword()
+                )
+        );
+
         user.setRole(request.getRole());
-        user.setPassword(passwordEncoder.encode(request.getPassword()));
+
+        user.setDepartment(department);
+
+        user.setYear(request.getYear());
+
         user.setCreatedAt(LocalDateTime.now());
+
         userRespository.save(user);
 
-       return "User Register Successfully";
+        return "User Registered Successfully";
     }
 
     public AuthResponse login(LoginRequest request) {
@@ -44,10 +88,17 @@ public class AuthService {
         }
         User user=userRespository.findByEmail(request.getEmail())
                 .orElseThrow(()->new ResourceNotFoundException("User not found"));
-        if(passwordEncoder.matches(request.getPassword(),user.getPassword())){
+        if(!passwordEncoder.matches(
+                request.getPassword(),
+                user.getPassword())) {
 
-            return new AuthResponse(jwtService.generateToke(user));
+            throw new RuntimeException(
+                    "Invalid Credentials"
+            );
         }
-        return new AuthResponse("Invalid credentails");
+
+        return new AuthResponse(
+                jwtService.generateToke(user)
+        );
     }
 }
