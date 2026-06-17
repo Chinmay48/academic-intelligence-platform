@@ -28,4 +28,22 @@ public class DepartmentController {
       public ResponseEntity<List<DepartmentResponse>> getAllDepartments(){
           return ResponseEntity.ok(departmentService.getAllDepartments());
       }
+
+      @GetMapping("/{id}")
+      public ResponseEntity<DepartmentResponse> getDepartmentById(@PathVariable String id){
+          return ResponseEntity.ok(departmentService.getDepartmentById(id));
+      }
+
+      @PutMapping("/{id}")
+      @PreAuthorize("hasRole('ADMIN')")
+      public  ResponseEntity<DepartmentResponse> updateDepartmentById(@RequestBody DepartmentRequest request,@PathVariable String id){
+          return ResponseEntity.ok(departmentService.updateDepartmentById(request,id));
+      }
+
+      @DeleteMapping("/{id}")
+      @PreAuthorize("hasRole('ADMIN')")
+      public  ResponseEntity<Void> deleteDepartmentById(@PathVariable String id){
+          departmentService.deleteDepartmentById(id);
+          return ResponseEntity.noContent().build();
+      }
 }
