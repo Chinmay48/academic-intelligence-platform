@@ -1,6 +1,7 @@
 package com.aip.academic_intelligence_platform.exception;
 
 import com.aip.academic_intelligence_platform.common.enums.dto.ApiResponse;
+import com.aip.academic_intelligence_platform.subject.Subject;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -25,6 +26,11 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(DepartmentAlreadyException.class)
     public  ResponseEntity<ApiResponse> handleDepartmentAlreadyException(DepartmentAlreadyException ex){
+        return  ResponseEntity.status(HttpStatus.CONFLICT).body(new ApiResponse(false,ex.getMessage()));
+    }
+
+    @ExceptionHandler(SubjectAlreadyExistsException.class)
+    public ResponseEntity<ApiResponse> handleSubjectAlreadyException(SubjectAlreadyExistsException ex){
         return  ResponseEntity.status(HttpStatus.CONFLICT).body(new ApiResponse(false,ex.getMessage()));
     }
 }
