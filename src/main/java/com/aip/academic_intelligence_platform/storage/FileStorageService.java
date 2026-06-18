@@ -1,4 +1,9 @@
 package com.aip.academic_intelligence_platform.storage;
 
-public class FileStorageService {
+
+import org.springframework.web.multipart.MultipartFile;
+
+
+public interface FileStorageService {
+    String storeFile(MultipartFile file);
 }
