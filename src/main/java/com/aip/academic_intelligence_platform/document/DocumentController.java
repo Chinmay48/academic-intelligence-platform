@@ -46,6 +46,8 @@ public class DocumentController {
         Resource resource=new UrlResource(path.toUri());
         return ResponseEntity.ok().header(HttpHeaders.CONTENT_DISPOSITION,"attachment; filename=\""+document.getFileName()+"\"").body(resource);
     }
+
+
 }
 
 

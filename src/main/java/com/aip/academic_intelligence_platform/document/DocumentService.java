@@ -2,6 +2,7 @@ package com.aip.academic_intelligence_platform.document;
 
 
 import com.aip.academic_intelligence_platform.document.dto.DocumentResponse;
+import com.aip.academic_intelligence_platform.document.processing.DocumentProcessingService;
 import com.aip.academic_intelligence_platform.exception.InvalidFileException;
 import com.aip.academic_intelligence_platform.exception.ResourceNotFoundException;
 import com.aip.academic_intelligence_platform.exception.UnauthorizedException;
@@ -27,6 +28,7 @@ public class DocumentService {
 
     private final SubjectRepository subjectRepository;
     private final FileStorageService fileStorageService;
+    private final DocumentProcessingService documentProcessingService;
     public DocumentResponse uploadDocument(MultipartFile file,String title,String description,String subjectId,String email){
         if(file.isEmpty()){
             throw  new InvalidFileException("Uploaded file is empty");
@@ -67,6 +69,7 @@ public class DocumentService {
         document.setProcessed(false);
         document.setDocumentType(determineDocumentType(file.getOriginalFilename()));
         documentRepository.save(document);
+        documentProcessingService.processDocument(document);
         return new DocumentResponse(document.getId(), document.getTitle(),  document.getDescription(), document.getFileName(),subject.getName(),faculty.getName());
 
     }
