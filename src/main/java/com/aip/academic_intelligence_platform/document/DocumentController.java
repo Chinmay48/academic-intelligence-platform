@@ -38,7 +38,6 @@ public class DocumentController {
     public ResponseEntity<List<DocumentResponse>> getDocumentsBySubject(@PathVariable String subjectId){
         return ResponseEntity.ok(documentService.getDocumentsBySubject(subjectId));
     }
-
     @GetMapping("/download/{id}")
     public ResponseEntity<Resource> downloadDocument(@PathVariable String id) throws IOException {
         Document document=documentService.getDocument(id);
@@ -47,6 +46,10 @@ public class DocumentController {
         return ResponseEntity.ok().header(HttpHeaders.CONTENT_DISPOSITION,"attachment; filename=\""+document.getFileName()+"\"").body(resource);
     }
 
+    @GetMapping("/{id}/chunks")
+    public ResponseEntity<List<DocumentChunk>> getChunks(@PathVariable String id){
+        return  ResponseEntity.ok(documentService.getChunks(id));
+    }
 
 }
 

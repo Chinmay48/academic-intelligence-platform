@@ -8,12 +8,14 @@ import com.aip.academic_intelligence_platform.document.processing.chunking.Chunk
 import com.aip.academic_intelligence_platform.document.processing.extractor.DocsExtractor;
 import com.aip.academic_intelligence_platform.document.processing.extractor.PDFExtractor;
 import com.aip.academic_intelligence_platform.document.processing.extractor.PPTExtractor;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
 @Service
+@Transactional
 @RequiredArgsConstructor
 public class DocumentProcessingService {
     private final PDFExtractor pdfExtractor;
@@ -31,6 +33,10 @@ public class DocumentProcessingService {
             case DOC,DOCX -> extractText=docsExtractor.extractText(document.getFilePath());
             default -> throw new RuntimeException("Unsupported document type");
         }
+        System.out.println(
+                "Extracted Text Length: "
+                        + extractText.length()
+        );
         saveChunks(document,extractText);
         document.setProcessed(true);
         documentRepository.save(document);
@@ -47,6 +53,11 @@ public class DocumentProcessingService {
             chunk.setChunkOrder(i+1);
             chunk.setStartCharacter(startCharacter);
             chunk.setEndCharacter(startCharacter+chunkText.length());
+            System.out.println(
+                    "Chunks Created: "
+                            + chunks.size()
+            );
+            documentChunkRepository.save(chunk);
             startCharacter+=chunkText.length();
         }
     }

@@ -4,13 +4,14 @@ import org.apache.poi.xslf.usermodel.XMLSlideShow;
 import org.apache.poi.xslf.usermodel.XSLFShape;
 import org.apache.poi.xslf.usermodel.XSLFSlide;
 import org.apache.poi.xslf.usermodel.XSLFTextShape;
+import org.springframework.stereotype.Service;
 
 
 import java.io.IOException;
 import java.nio.file.Files;
 
 import java.nio.file.Paths;
-
+@Service
 public class PPTExtractor implements  DocumentExtractor{
     @Override
     public String extractText(

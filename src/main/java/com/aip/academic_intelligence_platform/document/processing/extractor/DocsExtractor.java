@@ -2,11 +2,12 @@ package com.aip.academic_intelligence_platform.document.processing.extractor;
 
 import org.apache.poi.xwpf.extractor.XWPFWordExtractor;
 import org.apache.poi.xwpf.usermodel.XWPFDocument;
+import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-
+@Service
 public class DocsExtractor implements  DocumentExtractor{
     @Override
     public String extractText(String filePath){

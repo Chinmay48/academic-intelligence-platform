@@ -25,7 +25,7 @@ import java.util.List;
 public class DocumentService {
     private  final  DocumentRepository documentRepository;
     private  final UserRespository userRespository;
-
+    private final DocumentChunkRepository documentChunkRepository;
     private final SubjectRepository subjectRepository;
     private final FileStorageService fileStorageService;
     private final DocumentProcessingService documentProcessingService;
@@ -95,5 +95,10 @@ public class DocumentService {
 
     public Document getDocument(String id){
         return documentRepository.findById(id).orElseThrow(()->new ResourceNotFoundException("Document not found"));
+    }
+
+    public List<DocumentChunk> getChunks(String documentId){
+              if(!documentRepository.existsById(documentId)) throw new ResourceNotFoundException("Document Id not found");
+        return  documentChunkRepository.findByDocumentIdOrderByChunkOrder(documentId);
     }
 }
