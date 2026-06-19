@@ -20,5 +20,7 @@ public class DocumentChunk {
     private Integer chunkOrder;
     private Integer startCharacter;
     private Integer endCharacter;
+    @Column(columnDefinition = "TEXT")
+    private String embedding;
 
 }
