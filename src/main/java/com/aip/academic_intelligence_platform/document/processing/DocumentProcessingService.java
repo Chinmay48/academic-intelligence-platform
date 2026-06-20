@@ -8,6 +8,8 @@ import com.aip.academic_intelligence_platform.document.processing.chunking.Chunk
 import com.aip.academic_intelligence_platform.document.processing.extractor.DocsExtractor;
 import com.aip.academic_intelligence_platform.document.processing.extractor.PDFExtractor;
 import com.aip.academic_intelligence_platform.document.processing.extractor.PPTExtractor;
+import com.aip.academic_intelligence_platform.embedding.EmbeddingParser;
+import com.aip.academic_intelligence_platform.embedding.EmbeddingService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -24,6 +26,8 @@ public class DocumentProcessingService {
     private final ChunkingService chunkingService;
     private final DocumentChunkRepository documentChunkRepository;
     private final DocumentRepository documentRepository;
+    private final EmbeddingService embeddingService;
+    private  final EmbeddingParser embeddingParser;
 
     public void processDocument(Document document){
         String extractText="";
@@ -51,6 +55,8 @@ public class DocumentProcessingService {
             chunk.setDocument(document);
             chunk.setChunkText(chunkText);
             chunk.setChunkOrder(i+1);
+            List<Double> embedding=embeddingService.generateEmbedding(chunkText);
+            chunk.setEmbedding(embeddingParser.toJson(embedding));
             chunk.setStartCharacter(startCharacter);
             chunk.setEndCharacter(startCharacter+chunkText.length());
             System.out.println(
