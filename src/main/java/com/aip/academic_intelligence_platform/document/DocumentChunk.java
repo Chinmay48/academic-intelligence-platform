@@ -22,5 +22,6 @@ public class DocumentChunk {
     private Integer endCharacter;
     @Column(columnDefinition = "TEXT")
     private String embedding;
+    private Integer pageNumber;
 
 }
