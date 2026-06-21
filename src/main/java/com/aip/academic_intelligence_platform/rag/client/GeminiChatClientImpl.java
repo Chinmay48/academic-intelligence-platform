@@ -15,7 +15,7 @@ public class GeminiChatClientImpl implements GeminiChatClient{
     private final RestClient restClient;
     @Value("${gemini.api.key}")
     private String apiKey;
-    @Value("${gemini.char.url}")
+    @Value("${gemini.chat.url}")
     private String chatUrl;
     @Override
     public String generateAnswer(String prompt){
