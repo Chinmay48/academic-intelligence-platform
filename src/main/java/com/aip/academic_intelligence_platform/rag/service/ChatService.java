@@ -38,11 +38,12 @@ public class ChatService {
                     """,List.of());
         }
 
-        memoryService.addMessage(student.getId(),"USER",question);
-        Conversation conversation=memoryService.getConversation(student.getId());
-        String prompt=promptBuilder.buildPrompt(question,chunks,conversation);
+
+        Conversation conversation=memoryService.getConversation(student);
+        memoryService.addMessage(conversation,"USER",question);
+        String prompt=promptBuilder.buildPrompt(question,chunks,memoryService.getRecentMessages(conversation.getId()));
         String answer=chatClient.generateAnswer(prompt);
-        memoryService.addMessage(student.getId(),"ASSISTANT",answer);
+        memoryService.addMessage(conversation,"ASSISTANT",answer);
         return new ChatResponse(answer,citationService.buildCitations(chunks));
     }
 }

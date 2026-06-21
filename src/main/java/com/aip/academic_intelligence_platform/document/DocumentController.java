@@ -2,6 +2,7 @@ package com.aip.academic_intelligence_platform.document;
 
 
 import com.aip.academic_intelligence_platform.document.dto.DocumentResponse;
+import com.aip.academic_intelligence_platform.document.dto.DocumentStatusResponse;
 import com.aip.academic_intelligence_platform.exception.InvalidFileException;
 import lombok.RequiredArgsConstructor;
 import org.apache.tomcat.util.http.fileupload.InvalidFileNameException;
@@ -49,6 +50,10 @@ public class DocumentController {
     @GetMapping("/{id}/chunks")
     public ResponseEntity<List<DocumentChunk>> getChunks(@PathVariable String id){
         return  ResponseEntity.ok(documentService.getChunks(id));
+    }
+    @GetMapping("/{id}/status")
+    public ResponseEntity<DocumentStatusResponse> getStatus(@PathVariable String id){
+        return ResponseEntity.ok(documentService.getStatus(id));
     }
 
 }

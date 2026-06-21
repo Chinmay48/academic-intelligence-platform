@@ -1,45 +1,84 @@
 package com.aip.academic_intelligence_platform.rag.memory;
 
+import com.aip.academic_intelligence_platform.user.User;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
+import java.time.LocalDateTime;
+import java.util.List;
+
 
 @Service
+@RequiredArgsConstructor
 public class MemoryService {
-    private final Map<String,Conversation> memory =new ConcurrentHashMap<>();
-    public Conversation getConversation(String userId){
-        return  memory.computeIfAbsent(userId,id->new Conversation());
+    private final ConversationRepository conversationRepository;
+    private final MessageRepository messageRepository;
+    public Conversation getConversation(
+            User user
+    ){
+
+        return conversationRepository
+
+                .findByUserId(
+                        user.getId()
+                )
+
+                .orElseGet(() -> {
+
+                    Conversation conversation =
+                            new Conversation();
+
+                    conversation.setUser(
+                            user
+                    );
+
+                    conversation.setCreatedAt(
+                            LocalDateTime.now()
+                    );
+
+                    return conversationRepository
+                            .save(
+                                    conversation
+                            );
+                });
     }
     public void addMessage(
-            String userId,
+            Conversation conversation,
+
             String role,
             String content
     ){
+          Message message=new Message();
+          message.setConversation(conversation);
+          message.setRole(role);
+          message.setContent(content);
+          message.setCreatedAt(LocalDateTime.now());
+          messageRepository.save(message);
+    }
+    public void clearConversation(
+            String conversationId
+    ){
 
-        Conversation conversation =
-                getConversation(userId);
+        List<Message> messages =
+                messageRepository
+                        .findTop20ByConversationIdOrderByCreatedAtDesc(
+                                conversationId
+                        );
 
-        conversation.getMessage()
-                .add(
-                        new Message(
-                                role,
-                                content
-                        )
+        messageRepository.deleteAll(
+                messages
+        );
+    }
+    public List<Message>
+    getRecentMessages(
+            String conversationId
+    ){
+
+        return messageRepository
+
+                .findTop20ByConversationIdOrderByCreatedAtDesc(
+                        conversationId
                 );
 
-        if(
-                conversation
-                        .getMessage()
-                        .size()
-                        > 20
-        ){
-            conversation
-                    .getMessage()
-                    .remove(0);
-        }
-    }
-    public void clearConversation(String userId){
-        memory.remove(userId);
     }
 }

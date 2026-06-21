@@ -1,5 +1,6 @@
 package com.aip.academic_intelligence_platform.document;
 
+import com.aip.academic_intelligence_platform.common.enums.ProcessingStatus;
 import com.aip.academic_intelligence_platform.subject.Subject;
 import com.aip.academic_intelligence_platform.user.User;
 import jakarta.persistence.*;
@@ -28,6 +29,9 @@ public class Document {
     @ManyToOne
     @JoinColumn(name="uploaded_by")
     private User uploadedBy;
+
+    @Enumerated(EnumType.STRING)
+    private ProcessingStatus processingStatus;
     @CreationTimestamp
     private LocalDateTime createdAt;
 

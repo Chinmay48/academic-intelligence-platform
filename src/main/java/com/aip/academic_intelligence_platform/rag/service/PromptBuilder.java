@@ -2,19 +2,21 @@ package com.aip.academic_intelligence_platform.rag.service;
 
 import com.aip.academic_intelligence_platform.embedding.dto.RetrivedChunk;
 import com.aip.academic_intelligence_platform.rag.memory.Conversation;
+import com.aip.academic_intelligence_platform.rag.memory.MemoryService;
 import com.aip.academic_intelligence_platform.rag.memory.Message;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
 @Service
+@RequiredArgsConstructor
 public class PromptBuilder {
-    public String buildPrompt(String question, List<RetrivedChunk> chunks, Conversation conversation){
+    private  final MemoryService memoryService;
+    public String buildPrompt(String question, List<RetrivedChunk> chunks, List<Message> recentMessages){
         StringBuilder context=new StringBuilder();
         StringBuilder chatHistory=new StringBuilder();
-        List<Message> messages=conversation.getMessage();
-        int start=Math.max(0, messages.size()-10);
-        List<Message>recentMessages=messages.subList(start,messages.size());
+
         for(Message message:recentMessages){
             chatHistory.append(message.getRole());
             chatHistory.append(": ");

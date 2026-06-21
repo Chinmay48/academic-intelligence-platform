@@ -12,6 +12,7 @@ import com.aip.academic_intelligence_platform.embedding.EmbeddingParser;
 import com.aip.academic_intelligence_platform.embedding.EmbeddingService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -29,6 +30,7 @@ public class DocumentProcessingService {
     private final EmbeddingService embeddingService;
     private  final EmbeddingParser embeddingParser;
 
+    @Async
     public void processDocument(Document document){
         String extractText="";
         switch (document.getDocumentType()){

@@ -1,7 +1,9 @@
 package com.aip.academic_intelligence_platform.document;
 
 
+import com.aip.academic_intelligence_platform.common.enums.ProcessingStatus;
 import com.aip.academic_intelligence_platform.document.dto.DocumentResponse;
+import com.aip.academic_intelligence_platform.document.dto.DocumentStatusResponse;
 import com.aip.academic_intelligence_platform.document.processing.DocumentProcessingService;
 import com.aip.academic_intelligence_platform.exception.InvalidFileException;
 import com.aip.academic_intelligence_platform.exception.ResourceNotFoundException;
@@ -66,11 +68,21 @@ public class DocumentService {
         document.setFilePath(storedFilePath);
         document.setSubject(subject);
         document.setUploadedBy(faculty);
-        document.setProcessed(false);
+        document.setProcessingStatus(ProcessingStatus.PENDING);
         document.setDocumentType(determineDocumentType(file.getOriginalFilename()));
         documentRepository.save(document);
-        documentProcessingService.processDocument(document);
-        return new DocumentResponse(document.getId(), document.getTitle(),  document.getDescription(), document.getFileName(),subject.getName(),faculty.getName());
+        try{
+
+            documentProcessingService.processDocument(document);
+            document.setProcessingStatus(ProcessingStatus.COMPLETED);
+            documentRepository.save(document);
+            return new DocumentResponse(document.getId(), document.getTitle(),  document.getDescription(), document.getFileName(),subject.getName(),faculty.getName());
+        } catch (Exception ex) {
+            document.setProcessingStatus(ProcessingStatus.FAILED);
+            documentRepository.save(document);
+            throw ex;
+        }
+
 
     }
 
@@ -100,5 +112,10 @@ public class DocumentService {
     public List<DocumentChunk> getChunks(String documentId){
               if(!documentRepository.existsById(documentId)) throw new ResourceNotFoundException("Document Id not found");
         return  documentChunkRepository.findByDocumentIdOrderByChunkOrder(documentId);
+    }
+
+    public DocumentStatusResponse getStatus(String documentId){
+        Document document=documentRepository.findById(documentId).orElseThrow(()->new ResourceNotFoundException("Document not found"));
+        return new DocumentStatusResponse(document.getId(),document.getTitle(),document.getProcessingStatus());
     }
 }
