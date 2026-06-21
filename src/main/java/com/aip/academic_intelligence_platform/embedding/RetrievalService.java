@@ -17,14 +17,15 @@ public class RetrievalService {
     private final EmbeddingParser parser;
     private final CosineSimilarityService similarityService;
 
-    public List<RetrivedChunk> retrieve(String question){
+    public List<RetrivedChunk> retrieve(String question,String departmentId){
         List<Double> queryEmbedding=embeddingService.generateEmbedding(question);
-        List<DocumentChunk> chunks=repository.findAll();
+        List<DocumentChunk> chunks=repository.findByDocumentSubjectDepartmentId(departmentId);
+
         return chunks.stream().map(chunk->{
             List<Double> chunkEmbedding=parser.fromJson(chunk.getEmbedding());
             double similarity=similarityService.calculate(queryEmbedding,chunkEmbedding);
-            return new RetrivedChunk(chunk.getDocument().getTitle(),chunk.getChunkText(),similarity);
-        }).sorted((a,b)->Double.compare(b.similarity(),a.similarity())).limit(5).toList();
+            return new RetrivedChunk(chunk.getDocument().getTitle(),chunk.getChunkText(),chunk.getChunkOrder(),chunk.getPageNumber(),similarity);
+        }).filter(chunk->chunk.similarity()>0.50).sorted((a,b)->Double.compare(b.similarity(),a.similarity())).limit(5).toList();
     }
 
 }

@@ -11,7 +11,7 @@ public class CitationService {
     public List<CitationDto> buildCitations(
             List<RetrivedChunk> chunks
     ){
-        return chunks.stream().map(chunk->new CitationDto(chunk.docuementName(),null)).distinct().toList();
+        return chunks.stream().map(chunk->new CitationDto(chunk.docuementName(),chunk.chunkOrder(),chunk.pageNumber())).toList();
     }
 
 }

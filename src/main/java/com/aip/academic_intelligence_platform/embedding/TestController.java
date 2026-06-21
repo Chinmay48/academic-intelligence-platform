@@ -31,8 +31,8 @@ public class TestController {
                 + apiKey).retrieve().body(String.class);
     }
 
-    @GetMapping("/retrieve")
-    public List<RetrivedChunk> retrieve(@RequestParam String question){
-        return retrievalService.retrieve(question);
-    }
+//    @GetMapping("/retrieve")
+//    public List<RetrivedChunk> retrieve(@RequestParam String question){
+//        return retrievalService.retrieve(question);
+//    }
 }
