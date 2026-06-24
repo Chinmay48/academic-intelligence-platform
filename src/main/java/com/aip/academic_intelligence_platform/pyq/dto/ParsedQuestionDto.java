@@ -5,8 +5,13 @@ import lombok.Data;
 
 @Data
 public class ParsedQuestionDto {
+    private String section;
+
     private Integer questionNumber;
+
     private Integer marks;
+
     private Integer courseOutcome;
+
     private String questionText;
 }
