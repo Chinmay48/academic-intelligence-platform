@@ -7,6 +7,8 @@ import com.aip.academic_intelligence_platform.rag.client.GeminiChatClient;
 import com.aip.academic_intelligence_platform.rag.dto.ChatResponse;
 import com.aip.academic_intelligence_platform.rag.memory.Conversation;
 import com.aip.academic_intelligence_platform.rag.memory.MemoryService;
+import com.aip.academic_intelligence_platform.rag.memory.Message;
+import com.aip.academic_intelligence_platform.rag.rewrite.QuereyRewriteService;
 import com.aip.academic_intelligence_platform.user.User;
 import com.aip.academic_intelligence_platform.user.UserRespository;
 import lombok.RequiredArgsConstructor;
@@ -24,10 +26,13 @@ public class ChatService {
     private final CitationService citationService;
     private final UserRespository userRespository;
     private final MemoryService memoryService;
+    private final QuereyRewriteService quereyRewriteService;
     public ChatResponse askQuestion(String question,String email){
         User student=userRespository.findByEmail(email).orElseThrow(()->new ResourceNotFoundException("User not found"));
-
-        List<RetrivedChunk> chunks=retrievalService.retrieve(question,student.getDepartment().getId());
+        Conversation prevConversation=memoryService.getConversation(student);
+        List<Message> history=memoryService.getRecentMessages(prevConversation.getId());
+        String effectiveQuestion=quereyRewriteService.rewriteQuestion(question,history);
+        List<RetrivedChunk> chunks=retrievalService.retrieve(effectiveQuestion,student.getDepartment().getId());
         if(chunks.isEmpty()){
             return new ChatResponse("No relevant academic resource found.",List.of());
         }
