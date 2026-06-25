@@ -15,6 +15,7 @@ public class QuestionPaper {
     private String id;
     private String examType;
     private Integer year;
+
     private String subjectName;
     private String subjectCode;
     private String branch;

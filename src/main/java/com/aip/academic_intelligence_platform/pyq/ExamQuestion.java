@@ -17,5 +17,7 @@ public class ExamQuestion {
     private Integer marks;
     private Integer courseOutcome;
     @Column(columnDefinition = "TEXT")
+    private String topic;
+    @Column(columnDefinition = "TEXT")
     private String questionText;
 }
