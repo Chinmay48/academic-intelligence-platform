@@ -14,6 +14,7 @@ public class ExamQuestion {
     @JoinColumn(name="question_paper_id")
     private QuestionPaper questionPaper;
     private Integer questionNumber;
+    private String section;
     private Integer marks;
     private Integer courseOutcome;
     @Column(columnDefinition = "TEXT")
