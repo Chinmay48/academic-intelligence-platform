@@ -9,5 +9,5 @@ export const register=(data)=>{
 }
 
 export const getCurrentUser=()=>{
-    return api.get("/accounts/me");
+    return api.get("/auth/accounts/me");
 }

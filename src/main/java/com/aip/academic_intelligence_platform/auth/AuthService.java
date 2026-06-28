@@ -3,7 +3,7 @@ package com.aip.academic_intelligence_platform.auth;
 import com.aip.academic_intelligence_platform.auth.dto.AuthResponse;
 import com.aip.academic_intelligence_platform.auth.dto.LoginRequest;
 import com.aip.academic_intelligence_platform.auth.dto.RegisterRequest;
-
+import com.aip.academic_intelligence_platform.auth.dto.UserProfileResponse;
 import com.aip.academic_intelligence_platform.common.enums.Role;
 import com.aip.academic_intelligence_platform.department.Department;
 import com.aip.academic_intelligence_platform.department.DepartmentRepository;
@@ -13,8 +13,12 @@ import com.aip.academic_intelligence_platform.security.JwtService;
 import com.aip.academic_intelligence_platform.user.User;
 import com.aip.academic_intelligence_platform.user.UserRespository;
 import lombok.RequiredArgsConstructor;
+
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.RequestBody;
 
 import java.time.LocalDateTime;
 import java.util.Optional;
@@ -101,4 +105,7 @@ public class AuthService {
                 jwtService.generateToke(user)
         );
     }
+
+    
+    
 }
