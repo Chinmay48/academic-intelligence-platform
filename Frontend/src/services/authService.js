@@ -1,13 +1,17 @@
 import api from "../utils/axios";
 
-export const login=(data)=>{
-    return api.post("/auth/login",data);
+export const login= async(credentials)=>{
+   const response= await api.post("/auth/login",credentails);
+   return response.data;
+    
 }
 
-export const register=(data)=>{
-    return api.post("/auth/register",data)
+export const register= async(credentials)=>{
+    const response= await api.post("/auth/register",credentials);
+    return response.data;
 }
 
 export const getCurrentUser=()=>{
     return api.get("/auth/accounts/me");
 }
+
