@@ -1,7 +1,7 @@
 import api from "../utils/axios";
 
 export const login= async(credentials)=>{
-   const response= await api.post("/auth/login",credentails);
+   const response= await api.post("/auth/login",credentiqls);
    return response.data;
     
 }

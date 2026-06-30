@@ -23,8 +23,6 @@ public class DepartmentController {
           return ResponseEntity.status(HttpStatus.CREATED).body(departmentService.createDepartment(request));
       }
       @GetMapping
-      @PreAuthorize(
-              "hasAnyRole('ADMIN','FACULTY','STUDENT')")
       public ResponseEntity<List<DepartmentResponse>> getAllDepartments(){
           return ResponseEntity.ok(departmentService.getAllDepartments());
       }
