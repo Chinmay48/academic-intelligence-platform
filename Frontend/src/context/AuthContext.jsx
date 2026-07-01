@@ -12,24 +12,30 @@ export const AuthProvider=({children})=>{
     },[])
     const loadUser=async()=>{
         const token=getToken();
+        
         if(!token){
+
             setLoading(false);
-            return;
+            return null;
         }
         try {
             const response=await getCurrentUser();
+            
             setUser(response.data)
+            return response.data;
         } catch (error) {
             removeToken();
             setUser(null);
+        }finally{
+             setLoading(false);
         }
-        setLoading(false);
+        
     }
     const logout=()=>{
         removeToken();
         setUser(null);
     }
-    return(<AuthContext.Provider value={{user,setUser,loading,logout}}>
+    return(<AuthContext.Provider value={{user,setUser,loading,logout,loadUser}}>
         {children}
     </AuthContext.Provider>)
 }
