@@ -6,4 +6,6 @@ import java.util.List;
 
 public interface DocumentRepository extends JpaRepository<Document,String> {
     List<Document> findBySubjectId(String subjectId);
+    long count();
+    long countByUploadedById(String facultyId);
 }
