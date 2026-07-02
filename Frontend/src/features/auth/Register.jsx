@@ -332,7 +332,7 @@ function Register() {
                   <motion.div whileTap={{ scale: 0.995 }}>
                     <select
                       name="departmentId"
-                      required
+                      
                       className="w-full bg-slate-50 border border-slate-200 text-slate-900 rounded-xl px-4 py-3 transition-all duration-200 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 appearance-none cursor-pointer"
                       value={formData.departmentId}
                       onChange={handleChange}

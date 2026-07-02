@@ -33,7 +33,9 @@ public class AuthController {
      @GetMapping("/accounts/me")
      public ResponseEntity<UserProfileResponse> getMyProfile(Authentication authentication){
          User user=userRespository.findByEmail(authentication.getName()).orElseThrow(()->new ResourceNotFoundException("User not found"));
-        return ResponseEntity.ok(new UserProfileResponse(user.getId(),user.getName(),user.getEmail(),user.getRole(),user.getDepartment().getName(),user.getYear()));
+        return ResponseEntity.ok(new UserProfileResponse(user.getId(),user.getName(),user.getEmail(),user.getRole(), user.getDepartment() != null
+                            ? user.getDepartment().getName()
+                            : null,user.getYear()));
      }
 
 

@@ -24,7 +24,7 @@ function AppRoutes() {
               <FacultyDashboard/>
         </RoleRoute>
       </ProtectedRoute>}/>
-      <Route path="/admin" element={<ProtectedRoute>
+      <Route path="/admin/dashboard" element={<ProtectedRoute>
         <RoleRoute allowedRoles={[ROLE.ADMIN]}>
              <AdminDashboard/>
         </RoleRoute>
