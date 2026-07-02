@@ -9,6 +9,7 @@ import {ROLE} from "../utils/constants"
 import FacultyDashboard from "../features/dashboard/FacultyDashboard";
 import AdminDashboard from "../features/dashboard/AdminDashboard";
 import { Navigate } from "react-router-dom";
+import UploadDocument from "../features/documents/UploadDocument";
 function AppRoutes() {
   return (
     <Routes>
@@ -27,6 +28,11 @@ function AppRoutes() {
       <Route path="/admin/dashboard" element={<ProtectedRoute>
         <RoleRoute allowedRoles={[ROLE.ADMIN]}>
              <AdminDashboard/>
+        </RoleRoute>
+      </ProtectedRoute>}/>
+      <Route path="/faculty/upload-document" element={<ProtectedRoute>
+        <RoleRoute allowedRoles={[ROLE.FACULTY]}>
+             <UploadDocument/>
         </RoleRoute>
       </ProtectedRoute>}/>
       
