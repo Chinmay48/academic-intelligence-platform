@@ -35,7 +35,7 @@ public class AuthController {
          User user=userRespository.findByEmail(authentication.getName()).orElseThrow(()->new ResourceNotFoundException("User not found"));
         return ResponseEntity.ok(new UserProfileResponse(user.getId(),user.getName(),user.getEmail(),user.getRole(), user.getDepartment() != null
                             ? user.getDepartment().getName()
-                            : null,user.getYear()));
+                            : null,user.getDepartment()!=null? user.getDepartment().getId():null, user.getYear()));
      }
 
 

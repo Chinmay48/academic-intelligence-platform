@@ -6,5 +6,6 @@ public record UserProfileResponse(
         String email,
         Role role,
         String department,
+        String departmentId,
         Integer year
 ) {}
