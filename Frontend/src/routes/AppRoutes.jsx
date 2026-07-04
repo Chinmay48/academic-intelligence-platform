@@ -10,6 +10,7 @@ import FacultyDashboard from "../features/dashboard/FacultyDashboard";
 import AdminDashboard from "../features/dashboard/AdminDashboard";
 import { Navigate } from "react-router-dom";
 import UploadDocument from "../features/documents/UploadDocument";
+import StudentChat from "../features/chat/StudentChat";
 function AppRoutes() {
   return (
     <Routes>
@@ -33,6 +34,11 @@ function AppRoutes() {
       <Route path="/faculty/upload-document" element={<ProtectedRoute>
         <RoleRoute allowedRoles={[ROLE.FACULTY]}>
              <UploadDocument/>
+        </RoleRoute>
+      </ProtectedRoute>}/>
+       <Route path="/student/chat" element={<ProtectedRoute>
+        <RoleRoute allowedRoles={[ROLE.STUDENT]}>
+            <StudentChat/>
         </RoleRoute>
       </ProtectedRoute>}/>
       
