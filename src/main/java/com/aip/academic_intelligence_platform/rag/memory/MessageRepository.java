@@ -6,4 +6,6 @@ import java.util.List;
 
 public interface MessageRepository extends JpaRepository<Message,String> {
     List<Message> findTop20ByConversationIdOrderByCreatedAtDesc(String conversationId);
+    List<Message> findByConversationIdOrderByCreatedAtAsc(String conversationId);
+    void deleteByConversationId(String conversationId);
 }

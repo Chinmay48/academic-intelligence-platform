@@ -4,6 +4,7 @@ import com.aip.academic_intelligence_platform.user.User;
 import jakarta.persistence.*;
 import lombok.Data;
 import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -15,9 +16,13 @@ public class Conversation {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private String id;
-    @ManyToOne
+    @ManyToOne(fetch=FetchType.LAZY)
+    @JoinColumn(name="user_id",nullable = false)
     private User user;
+    private String title;
+
     @CreationTimestamp
     private LocalDateTime createdAt;
-
+    @UpdateTimestamp
+    private LocalDateTime updatedAt;
 }

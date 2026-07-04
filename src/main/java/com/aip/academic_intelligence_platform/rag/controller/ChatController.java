@@ -18,6 +18,6 @@ public class ChatController {
     private final ChatService chatService;
     @PostMapping
     public ResponseEntity<ChatResponse> chat(@RequestBody ChatRequest request, Authentication authentication){
-        return ResponseEntity.ok(chatService.askQuestion(request.getQuestion(),authentication.getName()));
+        return ResponseEntity.ok(chatService.askQuestion(request.getQuestion(),authentication.getName(),request.getConversationId()));
     }
 }
