@@ -9,7 +9,7 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 public class MessageResponse {
     private String id;
-    private String rolw;
+    private String role;
     private String context;
     private LocalDateTime createdAt;
 }
