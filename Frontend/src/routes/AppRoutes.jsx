@@ -11,6 +11,7 @@ import AdminDashboard from "../features/dashboard/AdminDashboard";
 import { Navigate } from "react-router-dom";
 import UploadDocument from "../features/documents/UploadDocument";
 import StudentChat from "../features/chat/StudentChat";
+import UploadPYQ from "../features/pyq/UploadPYQ";
 function AppRoutes() {
   return (
     <Routes>
@@ -39,6 +40,11 @@ function AppRoutes() {
        <Route path="/student/chat" element={<ProtectedRoute>
         <RoleRoute allowedRoles={[ROLE.STUDENT]}>
             <StudentChat/>
+        </RoleRoute>
+      </ProtectedRoute>}/>
+      <Route path="/faculty/upload-pyq" element={<ProtectedRoute>
+        <RoleRoute allowedRoles={[ROLE.FACULTY]}>
+             <UploadPYQ/>
         </RoleRoute>
       </ProtectedRoute>}/>
       
