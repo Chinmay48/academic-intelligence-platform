@@ -19,8 +19,8 @@ public class QuestionPaperController {
     private final QuestionPaperService questionPaperService;
 
     @PostMapping("/upload")
-    public ResponseEntity<String> upload(@RequestParam MultipartFile file){
-        return ResponseEntity.status(HttpStatus.CREATED).body(questionPaperService.uploadQuestionPaper(file));
+    public ResponseEntity<String> upload(@RequestParam MultipartFile file, @RequestParam("subjectId") String subjectId){
+        return ResponseEntity.status(HttpStatus.CREATED).body(questionPaperService.uploadQuestionPaper(file,subjectId));
     }
 
     @GetMapping("/papers")

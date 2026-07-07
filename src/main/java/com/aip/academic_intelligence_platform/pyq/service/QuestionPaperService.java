@@ -14,9 +14,12 @@ import com.aip.academic_intelligence_platform.pyq.dto.ParsedQuestionDto;
 import com.aip.academic_intelligence_platform.pyq.dto.ParsedQuestionPaperDto;
 import com.aip.academic_intelligence_platform.pyq.dto.QuestionPaperResponse;
 import com.aip.academic_intelligence_platform.pyq.parser.QuestionPaperParserService;
+import com.aip.academic_intelligence_platform.subject.Subject;
+import com.aip.academic_intelligence_platform.subject.SubjectRepository;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.ArrayList;
@@ -31,9 +34,12 @@ public class QuestionPaperService {
     private final ExamQuestionRepository questionRepository;
     private final QuestionPaperParserService questionPaperParserService;
     private final TopicExtractionService topicExtractionService;
-    public String uploadQuestionPaper(MultipartFile file){
+    private final SubjectRepository subjectRepository;
+    @Transactional
+    public String uploadQuestionPaper(MultipartFile file,String subjectId){
+        Subject subject= subjectRepository.findById(subjectId).orElseThrow(()-> new ResourceNotFoundException("Subject not found"));
         ParsedQuestionPaperDto dto=questionPaperParserService.parse(file);
-        QuestionPaper paper=saveQuestionPaper(dto);
+        QuestionPaper paper=saveQuestionPaper(dto,subject);
         saveQuestions(paper,dto);
          return paper.getId();
     }
@@ -43,6 +49,7 @@ public class QuestionPaperService {
             ParsedQuestionPaperDto dto
     ) {
 
+         
         List<ParsedQuestionDto> questions = dto.getQuestions();
 
         TopicExtractListResponse response =
@@ -101,10 +108,10 @@ public class QuestionPaperService {
         questionRepository.saveAll(examQuestions);
     }
 
-    private QuestionPaper saveQuestionPaper(ParsedQuestionPaperDto dto){
+    private QuestionPaper saveQuestionPaper(ParsedQuestionPaperDto dto,Subject subject){
         QuestionPaper paper=new QuestionPaper();
         paper.setBranch(dto.getBranch());
-        paper.setSubjectName(dto.getSubjectName());
+        paper.setSubjectName(subject.getName());
         paper.setSubjectCode(dto.getSubjectCode());
         paper.setExamType(dto.getExamType());
         paper.setYear(dto.getYear());

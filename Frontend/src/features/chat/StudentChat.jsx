@@ -67,7 +67,7 @@ function StudentChat() {
     try {
       setSending(true);
       const response = await askQuestion(question, activeConversationId);
-
+      
       if (!activeConversationId) {
         setActiveConversationId(response.conversationId);
       }
