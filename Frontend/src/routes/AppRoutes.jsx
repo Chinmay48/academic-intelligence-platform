@@ -12,6 +12,7 @@ import { Navigate } from "react-router-dom";
 import UploadDocument from "../features/documents/UploadDocument";
 import StudentChat from "../features/chat/StudentChat";
 import UploadPYQ from "../features/pyq/UploadPYQ";
+import StudentAnalytics from "../features/analytics/StudentAnalytics";
 function AppRoutes() {
   return (
     <Routes>
@@ -45,6 +46,11 @@ function AppRoutes() {
       <Route path="/faculty/upload-pyq" element={<ProtectedRoute>
         <RoleRoute allowedRoles={[ROLE.FACULTY]}>
              <UploadPYQ/>
+        </RoleRoute>
+      </ProtectedRoute>}/>
+      <Route path="/student/pyq-analysis" element={<ProtectedRoute>
+        <RoleRoute allowedRoles={[ROLE.STUDENT]}>
+            <StudentAnalytics/>
         </RoleRoute>
       </ProtectedRoute>}/>
       

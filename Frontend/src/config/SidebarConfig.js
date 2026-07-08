@@ -3,8 +3,8 @@ export const sidebarItems={
     STUDENT:[
       {label:"Dashboard",path:"/student/dashboard",icon:LayoutDashboard},
       {label:"AI Chat",path:"/student/chat",icon:Bot},
-      {label:"Resources",path:"/student/resources",icon:BookOpenText},
-      {lable:"Analytics",path:"/student/analytics",icon:ChartNoAxesCombined}
+      {label:"PYQ Analysis",path:"/student/pyq-analysis",icon:BookOpenText},
+      
     ],
     FACULTY:[
       {label:"Dashboard",path:"/faculty/dashboard",icon:LayoutDashboard},
