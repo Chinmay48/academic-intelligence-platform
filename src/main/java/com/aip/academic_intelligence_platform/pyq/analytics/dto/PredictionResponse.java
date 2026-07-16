@@ -7,8 +7,8 @@ import lombok.Data;
 @AllArgsConstructor
 public class PredictionResponse {
     private String topic;
-    private Integer latestYear;
     private Integer frequency;
+    private Integer latestYear;
     private Double confidence;
 
 }
