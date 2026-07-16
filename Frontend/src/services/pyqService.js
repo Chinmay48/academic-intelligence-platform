@@ -47,3 +47,12 @@ export const uploadPYQ = async (
 
     return response.data;
 };
+
+export const getQuestionsBySubject = async (subjectName) => {
+
+    const response = await api.get(
+        `/pyq/questions?subject=${encodeURIComponent(subjectName)}`
+    );
+
+    return response.data;
+};

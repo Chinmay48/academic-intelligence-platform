@@ -1,6 +1,5 @@
 package com.aip.academic_intelligence_platform.pyq.controller;
 
-
 import com.aip.academic_intelligence_platform.pyq.dto.ExamQuestionResponse;
 import com.aip.academic_intelligence_platform.pyq.dto.QuestionPaperResponse;
 import com.aip.academic_intelligence_platform.pyq.service.QuestionPaperService;
@@ -19,22 +18,32 @@ public class QuestionPaperController {
     private final QuestionPaperService questionPaperService;
 
     @PostMapping("/upload")
-    public ResponseEntity<String> upload(@RequestParam MultipartFile file, @RequestParam("subjectId") String subjectId){
-        return ResponseEntity.status(HttpStatus.CREATED).body(questionPaperService.uploadQuestionPaper(file,subjectId));
+    public ResponseEntity<String> upload(@RequestParam MultipartFile file,
+            @RequestParam("subjectId") String subjectId) {
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(questionPaperService.uploadQuestionPaper(file, subjectId));
     }
 
     @GetMapping("/papers")
-    public ResponseEntity<List<QuestionPaperResponse>> getAllPapers(){
+    public ResponseEntity<List<QuestionPaperResponse>> getAllPapers() {
         return ResponseEntity.ok(questionPaperService.getAllQuestionPapers());
     }
+
     @GetMapping("/papers/{id}")
-    public ResponseEntity<QuestionPaperResponse> getPaper(@PathVariable String id){
+    public ResponseEntity<QuestionPaperResponse> getPaper(@PathVariable String id) {
         return ResponseEntity.ok(questionPaperService.getQuestionPaper(id));
     }
 
-    @GetMapping("/questions/{paperId}")
-    public ResponseEntity<List<ExamQuestionResponse>> getQuestions(@PathVariable String paperId){
-        return ResponseEntity.ok(questionPaperService.getQuestions(paperId));
+    // @GetMapping("/questions/{paperId}")
+    // public ResponseEntity<List<ExamQuestionResponse>> getQuestions(@PathVariable
+    // String paperId){
+    // return ResponseEntity.ok(questionPaperService.getQuestions(paperId));
 
+    // }
+    @GetMapping("/questions")
+    public ResponseEntity<List<ExamQuestionResponse>> getQuestions(@RequestParam String subject) {
+
+        return ResponseEntity.ok(
+                questionPaperService.getQuestionsBySubject(subject));
     }
 }

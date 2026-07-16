@@ -1,6 +1,4 @@
 package com.aip.academic_intelligence_platform.pyq.service;
-
-
 import com.aip.academic_intelligence_platform.exception.ResourceNotFoundException;
 import com.aip.academic_intelligence_platform.pyq.ExamQuestion;
 import com.aip.academic_intelligence_platform.pyq.ExamQuestionRepository;
@@ -16,7 +14,6 @@ import com.aip.academic_intelligence_platform.pyq.dto.QuestionPaperResponse;
 import com.aip.academic_intelligence_platform.pyq.parser.QuestionPaperParserService;
 import com.aip.academic_intelligence_platform.subject.Subject;
 import com.aip.academic_intelligence_platform.subject.SubjectRepository;
-
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -141,6 +138,25 @@ public class QuestionPaperService {
                 )
         ).toList();
     }
+
+    public List<ExamQuestionResponse> getQuestionsBySubject(
+        String subjectName
+) {
+
+    return questionRepository
+            .findByQuestionPaperSubjectNameOrderByQuestionPaperYearDescQuestionNumberAsc(subjectName)
+            .stream()
+            .map(question -> new ExamQuestionResponse(
+                    question.getId(),
+                    question.getSection(),
+                    question.getQuestionNumber(),
+                    question.getMarks(),
+                    question.getCourseOutcome(),
+                    question.getTopic(),
+                    question.getQuestionText()
+            ))
+            .toList();
+}
 
 
 }

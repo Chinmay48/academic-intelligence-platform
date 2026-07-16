@@ -9,6 +9,8 @@ import java.util.List;
 public interface ExamQuestionRepository extends JpaRepository<ExamQuestion,String> {
     List<ExamQuestion> findByQuestionPaperId(String questionPaperId);
     List<ExamQuestion> findByQuestionPaperSubjectName(String subjectName);
+    List<ExamQuestion> findByQuestionPaperSubjectNameOrderByQuestionPaperYearDescQuestionNumberAsc(String subjectName);
+
     @Query("""
 SELECT q.topic,
 COUNT(q)
