@@ -23,6 +23,15 @@ function StudentAnalytics() {
     }
   },[user.departmentId]);
 
+  useEffect(()=>{
+    if(selectedSubject){
+      loadAnalytics();
+    }
+    else{
+      setAnalytics(null)
+    }
+  },[selectedSubject])
+
   const loadSubjects = async () => {
     setLoadingSubjects(true);
     try {
