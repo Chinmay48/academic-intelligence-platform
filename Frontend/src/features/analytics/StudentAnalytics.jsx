@@ -9,8 +9,14 @@ import {
   Award,
   Zap,
   Activity,
+  FileQuestion,
+  Tag,
+  Filter,
+  ChevronLeft,
+  ChevronRight,
+  XCircle
 } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import DashboardLayout from "../../components/layout/DashboardLayout";
 import useAuth from "../../hooks/useAuth";
@@ -18,6 +24,7 @@ import { getSubjects } from "../../services/subjectService";
 import { showError } from "../../utils/toast";
 import { getAnalyticsDashboard } from "../../services/analyticsService";
 import { getQuestionsBySubject } from "../../services/pyqService";
+
 // --- Framer Motion Variants ---
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -36,17 +43,6 @@ const itemVariants = {
   },
 };
 
-const cardHover = {
-  rest: { scale: 1, y: 0, boxShadow: "0 1px 2px 0 rgb(0 0 0 / 0.05)" },
-  hover: {
-    scale: 1.02,
-    y: -4,
-    boxShadow:
-      "0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1)",
-    transition: { type: "spring", stiffness: 400, damping: 25 },
-  },
-};
-
 function StudentAnalytics() {
   const { user } = useAuth();
   const [subjects, setSubjects] = useState([]);
@@ -55,6 +51,14 @@ function StudentAnalytics() {
   const [loadingAnalytics, setLoadingAnalytics] = useState(false);
   const [loadingSubjects, setLoadingSubjects] = useState(false);
   const [questions, setQuestions] = useState([]);
+
+  // --- Pagination & Filtering State ---
+  const [currentPage, setCurrentPage] = useState(1);
+  const [filterTopic, setFilterTopic] = useState("");
+  const [filterMarks, setFilterMarks] = useState("");
+  const [filterCO, setFilterCO] = useState("");
+  const itemsPerPage = 10;
+
   const topTopics = analytics?.topTopics ?? [];
   const predictedTopics = analytics?.predictedQuestions ?? [];
   const marksDistribution = analytics?.marksDistribution ?? [];
@@ -72,8 +76,14 @@ function StudentAnalytics() {
   useEffect(() => {
     if (selectedSubject) {
       loadAnalytics();
+      // Reset filters and pagination when subject changes
+      setCurrentPage(1);
+      setFilterTopic("");
+      setFilterMarks("");
+      setFilterCO("");
     } else {
       setAnalytics(null);
+      setQuestions([]);
     }
   }, [selectedSubject]);
 
@@ -88,7 +98,6 @@ function StudentAnalytics() {
     setLoadingSubjects(true);
     try {
       const response = await getSubjects(user.departmentId);
-      console.log(response);
       setSubjects(response);
     } catch (error) {
       showError(error.response?.data?.message || "Failed to load subjects");
@@ -98,21 +107,46 @@ function StudentAnalytics() {
   };
 
   const loadAnalytics = async () => {
-    setLoadingAnalytics(false);
+    setLoadingAnalytics(true);
     try {
       const response = await getAnalyticsDashboard(selectedSubject);
-      console.log("Analytics Dashboard", response);
       const questionResponse = await getQuestionsBySubject(selectedSubject);
-
       setQuestions(questionResponse);
       setAnalytics(response);
     } catch (error) {
       console.log(error);
-      showError(error.response?.data.message || "Failed to get analytics");
+      showError(error.response?.data?.message || "Failed to get analytics");
       setAnalytics(null);
     } finally {
       setLoadingAnalytics(false);
     }
+  };
+
+  // --- Filtering & Pagination Logic ---
+  const uniqueTopics = useMemo(() => [...new Set(questions.map((q) => q.topic))].sort(), [questions]);
+  const uniqueMarks = useMemo(() => [...new Set(questions.map((q) => q.marks))].sort((a, b) => a - b), [questions]);
+  const uniqueCOs = useMemo(() => [...new Set(questions.map((q) => q.courseOutcomes))].sort(), [questions]);
+
+  const filteredQuestions = useMemo(() => {
+    return questions.filter((q) => {
+      const matchTopic = filterTopic === "" || q.topic === filterTopic;
+      const matchMarks = filterMarks === "" || q.marks.toString() === filterMarks;
+      const matchCO = filterCO === "" || q.courseOutcomes.toString() === filterCO;
+      return matchTopic && matchMarks && matchCO;
+    });
+  }, [questions, filterTopic, filterMarks, filterCO]);
+
+  const totalPages = Math.ceil(filteredQuestions.length / itemsPerPage);
+  const paginatedQuestions = useMemo(() => {
+    const start = (currentPage - 1) * itemsPerPage;
+    return filteredQuestions.slice(start, start + itemsPerPage);
+  }, [filteredQuestions, currentPage]);
+
+  const clearFilters = () => {
+    setFilterTopic("");
+    setFilterMarks("");
+    setFilterCO("");
+    setCurrentPage(1);
   };
 
   return (
@@ -220,13 +254,7 @@ function StudentAnalytics() {
             >
               {/* Summary Cards */}
               <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
-                <motion.div
-                  variants={itemVariants}
-                  initial="rest"
-                  whileHover="hover"
-                  animate="rest"
-                  className="bg-white rounded-3xl border border-slate-100 p-6 relative overflow-hidden group"
-                >
+                <motion.div variants={itemVariants} className="bg-white rounded-3xl border border-slate-100 p-6 relative overflow-hidden group hover:shadow-lg hover:-translate-y-1 transition-all duration-300">
                   <div className="absolute top-0 right-0 p-6 opacity-10 group-hover:opacity-20 transition-opacity">
                     <FileText className="w-24 h-24 text-blue-600 -mr-6 -mt-6" />
                   </div>
@@ -234,22 +262,12 @@ function StudentAnalytics() {
                     <div className="w-12 h-12 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center mb-4">
                       <FileText className="w-6 h-6" />
                     </div>
-                    <p className="text-slate-500 text-sm font-medium mb-1">
-                      Papers Analysed
-                    </p>
-                    <h2 className="text-4xl font-black text-slate-800 tracking-tight">
-                      {analytics.totalPapers}
-                    </h2>
+                    <p className="text-slate-500 text-sm font-medium mb-1">Papers Analysed</p>
+                    <h2 className="text-4xl font-black text-slate-800 tracking-tight">{analytics.totalPapers}</h2>
                   </div>
                 </motion.div>
 
-                <motion.div
-                  variants={itemVariants}
-                  initial="rest"
-                  whileHover="hover"
-                  animate="rest"
-                  className="bg-white rounded-3xl border border-slate-100 p-6 relative overflow-hidden group"
-                >
+                <motion.div variants={itemVariants} className="bg-white rounded-3xl border border-slate-100 p-6 relative overflow-hidden group hover:shadow-lg hover:-translate-y-1 transition-all duration-300">
                   <div className="absolute top-0 right-0 p-6 opacity-10 group-hover:opacity-20 transition-opacity">
                     <CircleHelp className="w-24 h-24 text-emerald-600 -mr-6 -mt-6" />
                   </div>
@@ -257,22 +275,12 @@ function StudentAnalytics() {
                     <div className="w-12 h-12 bg-emerald-50 text-emerald-600 rounded-2xl flex items-center justify-center mb-4">
                       <CircleHelp className="w-6 h-6" />
                     </div>
-                    <p className="text-slate-500 text-sm font-medium mb-1">
-                      Questions Analysed
-                    </p>
-                    <h2 className="text-4xl font-black text-slate-800 tracking-tight">
-                      {analytics.totalQuestions}
-                    </h2>
+                    <p className="text-slate-500 text-sm font-medium mb-1">Questions Analysed</p>
+                    <h2 className="text-4xl font-black text-slate-800 tracking-tight">{analytics.totalQuestions}</h2>
                   </div>
                 </motion.div>
 
-                <motion.div
-                  variants={itemVariants}
-                  initial="rest"
-                  whileHover="hover"
-                  animate="rest"
-                  className="bg-white rounded-3xl border border-slate-100 p-6 relative overflow-hidden group"
-                >
+                <motion.div variants={itemVariants} className="bg-white rounded-3xl border border-slate-100 p-6 relative overflow-hidden group hover:shadow-lg hover:-translate-y-1 transition-all duration-300">
                   <div className="absolute top-0 right-0 p-6 opacity-10 group-hover:opacity-20 transition-opacity">
                     <TrendingUp className="w-24 h-24 text-purple-600 -mr-6 -mt-6" />
                   </div>
@@ -280,25 +288,12 @@ function StudentAnalytics() {
                     <div className="w-12 h-12 bg-purple-50 text-purple-600 rounded-2xl flex items-center justify-center mb-4">
                       <TrendingUp className="w-6 h-6" />
                     </div>
-                    <p className="text-slate-500 text-sm font-medium mb-1">
-                      Most Asked Topic
-                    </p>
-                    <h2
-                      className="text-xl font-bold text-slate-800 leading-tight truncate"
-                      title={topTopic}
-                    >
-                      {topTopic}
-                    </h2>
+                    <p className="text-slate-500 text-sm font-medium mb-1">Most Asked Topic</p>
+                    <h2 className="text-xl font-bold text-slate-800 leading-tight truncate" title={topTopic}>{topTopic}</h2>
                   </div>
                 </motion.div>
 
-                <motion.div
-                  variants={itemVariants}
-                  initial="rest"
-                  whileHover="hover"
-                  animate="rest"
-                  className="bg-white rounded-3xl border border-slate-100 p-6 relative overflow-hidden group"
-                >
+                <motion.div variants={itemVariants} className="bg-white rounded-3xl border border-slate-100 p-6 relative overflow-hidden group hover:shadow-lg hover:-translate-y-1 transition-all duration-300">
                   <div className="absolute top-0 right-0 p-6 opacity-10 group-hover:opacity-20 transition-opacity">
                     <Target className="w-24 h-24 text-orange-600 -mr-6 -mt-6" />
                   </div>
@@ -306,15 +301,8 @@ function StudentAnalytics() {
                     <div className="w-12 h-12 bg-orange-50 text-orange-600 rounded-2xl flex items-center justify-center mb-4">
                       <Target className="w-6 h-6" />
                     </div>
-                    <p className="text-slate-500 text-sm font-medium mb-1">
-                      Top Expected Topic
-                    </p>
-                    <h2
-                      className="text-xl font-bold text-slate-800 leading-tight truncate"
-                      title={predictedTopic}
-                    >
-                      {predictedTopic}
-                    </h2>
+                    <p className="text-slate-500 text-sm font-medium mb-1">Top Expected Topic</p>
+                    <h2 className="text-xl font-bold text-slate-800 leading-tight truncate" title={predictedTopic}>{predictedTopic}</h2>
                   </div>
                 </motion.div>
               </div>
@@ -322,89 +310,53 @@ function StudentAnalytics() {
               {/* Lists Section */}
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 {/* Most Asked Topics */}
-                <motion.div
-                  variants={itemVariants}
-                  className="bg-white rounded-3xl border border-slate-100 p-6 lg:p-8 flex flex-col"
-                >
+                <motion.div variants={itemVariants} className="bg-white rounded-3xl border border-slate-100 p-6 lg:p-8 flex flex-col">
                   <div className="flex items-start justify-between mb-6">
                     <div>
                       <h2 className="text-xl font-bold text-slate-800 flex items-center gap-2">
-                        <Zap className="w-5 h-5 text-amber-500" /> Highly
-                        Repeated
+                        <Zap className="w-5 h-5 text-amber-500" /> Highly Repeated
                       </h2>
-                      <p className="text-sm text-slate-500 mt-1">
-                        Frequently appearing topics across previous papers
-                      </p>
+                      <p className="text-sm text-slate-500 mt-1">Frequently appearing topics across previous papers</p>
                     </div>
                   </div>
                   <div className="space-y-3 flex-1">
                     {topTopics.slice(0, 8).map((topic, index) => (
-                      <motion.div
-                        whileHover={{
-                          x: 4,
-                          backgroundColor: "rgba(248, 250, 252, 1)",
-                        }}
-                        key={topic.topic}
-                        className="flex items-center justify-between p-3 rounded-2xl transition-colors border border-transparent hover:border-slate-100"
-                      >
+                      <div key={topic.topic} className="flex items-center justify-between p-3 rounded-2xl transition-colors hover:bg-slate-50 border border-transparent hover:border-slate-100 group">
                         <div className="flex items-center gap-4 overflow-hidden">
-                          <div
-                            className={`shrink-0 w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold ${index < 3 ? "bg-indigo-600 text-white shadow-md shadow-indigo-200" : "bg-slate-100 text-slate-500"}`}
-                          >
+                          <div className={`shrink-0 w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold ${index < 3 ? "bg-indigo-600 text-white shadow-md shadow-indigo-200" : "bg-slate-100 text-slate-500"}`}>
                             {index + 1}
                           </div>
-                          <span
-                            className="font-semibold text-slate-700 truncate"
-                            title={topic.topic}
-                          >
+                          <span className="font-semibold text-slate-700 truncate group-hover:text-indigo-700 transition-colors" title={topic.topic}>
                             {topic.topic}
                           </span>
                         </div>
                         <span className="shrink-0 ml-4 bg-indigo-50 text-indigo-700 border border-indigo-100 px-3 py-1 rounded-full text-xs font-bold tracking-wide">
                           {topic.frequency} ×
                         </span>
-                      </motion.div>
+                      </div>
                     ))}
                   </div>
                 </motion.div>
 
                 {/* Expected Topics */}
-                <motion.div
-                  variants={itemVariants}
-                  className="bg-white rounded-3xl border border-slate-100 p-6 lg:p-8 flex flex-col"
-                >
+                <motion.div variants={itemVariants} className="bg-white rounded-3xl border border-slate-100 p-6 lg:p-8 flex flex-col">
                   <div className="flex items-start justify-between mb-6">
                     <div>
                       <h2 className="text-xl font-bold text-slate-800 flex items-center gap-2">
-                        <Target className="w-5 h-5 text-rose-500" /> AI
-                        Predictions
+                        <Target className="w-5 h-5 text-rose-500" /> AI Predictions
                       </h2>
-                      <p className="text-sm text-slate-500 mt-1">
-                        Ranked using historical frequency, marks, and recency
-                      </p>
+                      <p className="text-sm text-slate-500 mt-1">Ranked using historical frequency, marks, and recency</p>
                     </div>
                   </div>
                   <div className="space-y-3 flex-1">
                     {predictedTopics.slice(0, 8).map((topic, index) => (
-                      <motion.div
-                        whileHover={{
-                          x: 4,
-                          backgroundColor: "rgba(248, 250, 252, 1)",
-                        }}
-                        key={topic.topic}
-                        className="flex items-center justify-between p-3 rounded-2xl transition-colors border border-transparent hover:border-slate-100"
-                      >
+                      <div key={topic.topic} className="flex items-center justify-between p-3 rounded-2xl transition-colors hover:bg-slate-50 border border-transparent hover:border-slate-100 group">
                         <div className="flex items-center gap-4 overflow-hidden">
-                          <div
-                            className={`shrink-0 w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold ${index < 3 ? "bg-rose-500 text-white shadow-md shadow-rose-200" : "bg-slate-100 text-slate-500"}`}
-                          >
+                          <div className={`shrink-0 w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold ${index < 3 ? "bg-rose-500 text-white shadow-md shadow-rose-200" : "bg-slate-100 text-slate-500"}`}>
                             {index + 1}
                           </div>
                           <div className="truncate">
-                            <p
-                              className="font-semibold text-slate-700 truncate"
-                              title={topic.topic}
-                            >
+                            <p className="font-semibold text-slate-700 truncate group-hover:text-rose-600 transition-colors" title={topic.topic}>
                               {topic.topic}
                             </p>
                             <p className="text-[11px] font-medium text-slate-400 mt-0.5">
@@ -417,7 +369,7 @@ function StudentAnalytics() {
                             {topic.confidence}% Match
                           </span>
                         </div>
-                      </motion.div>
+                      </div>
                     ))}
                   </div>
                 </motion.div>
@@ -426,53 +378,29 @@ function StudentAnalytics() {
               {/* Progress Bars Section */}
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 {/* Marks Distribution */}
-                <motion.div
-                  variants={itemVariants}
-                  className="bg-white rounded-3xl border border-slate-100 p-6 lg:p-8"
-                >
+                <motion.div variants={itemVariants} className="bg-white rounded-3xl border border-slate-100 p-6 lg:p-8">
                   <div className="mb-8">
                     <h2 className="text-xl font-bold text-slate-800 flex items-center gap-2">
-                      <Award className="w-5 h-5 text-blue-500" /> Marks
-                      Weightage
+                      <Award className="w-5 h-5 text-blue-500" /> Marks Weightage
                     </h2>
-                    <p className="text-sm text-slate-500 mt-1">
-                      Historical distribution of questions according to marks.
-                    </p>
+                    <p className="text-sm text-slate-500 mt-1">Historical distribution of questions according to marks.</p>
                   </div>
-
                   <div className="space-y-6">
                     {marksDistribution.map((mark, idx) => (
                       <div key={mark.marks} className="group">
                         <div className="flex justify-between items-end mb-2">
-                          <span className="font-bold text-slate-700 flex items-center gap-2">
-                            {mark.marks} Marks
-                          </span>
-                          <span className="text-sm font-medium text-slate-500 bg-slate-50 px-2 py-0.5 rounded-md">
-                            {mark.count} Qs
-                          </span>
+                          <span className="font-bold text-slate-700 flex items-center gap-2">{mark.marks} Marks</span>
+                          <span className="text-sm font-medium text-slate-500 bg-slate-50 px-2 py-0.5 rounded-md">{mark.count} Qs</span>
                         </div>
                         <div className="w-full h-3.5 rounded-full bg-slate-100 overflow-hidden shadow-inner">
                           <motion.div
                             initial={{ width: 0 }}
-                            whileInView={{
-                              width: `${(mark.count * 100) / maxMarksCount}%`,
-                            }}
+                            whileInView={{ width: `${(mark.count * 100) / maxMarksCount}%` }}
                             viewport={{ once: true }}
-                            transition={{
-                              duration: 1,
-                              delay: idx * 0.1,
-                              ease: "easeOut",
-                            }}
+                            transition={{ duration: 1, delay: idx * 0.1, ease: "easeOut" }}
                             className="h-full rounded-full bg-gradient-to-r from-blue-500 to-indigo-500 relative"
                           >
-                            <div
-                              className="absolute inset-0 bg-white/20 w-full h-full rounded-full"
-                              style={{
-                                backgroundImage:
-                                  "linear-gradient(45deg,rgba(255,255,255,.15) 25%,transparent 25%,transparent 50%,rgba(255,255,255,.15) 50%,rgba(255,255,255,.15) 75%,transparent 75%,transparent)",
-                                backgroundSize: "1rem 1rem",
-                              }}
-                            ></div>
+                            <div className="absolute inset-0 bg-white/20 w-full h-full rounded-full" style={{ backgroundImage: "linear-gradient(45deg,rgba(255,255,255,.15) 25%,transparent 25%,transparent 50%,rgba(255,255,255,.15) 50%,rgba(255,255,255,.15) 75%,transparent 75%,transparent)", backgroundSize: "1rem 1rem" }}></div>
                           </motion.div>
                         </div>
                       </div>
@@ -481,53 +409,29 @@ function StudentAnalytics() {
                 </motion.div>
 
                 {/* Course Outcomes */}
-                <motion.div
-                  variants={itemVariants}
-                  className="bg-white rounded-3xl border border-slate-100 p-6 lg:p-8"
-                >
+                <motion.div variants={itemVariants} className="bg-white rounded-3xl border border-slate-100 p-6 lg:p-8">
                   <div className="mb-8">
                     <h2 className="text-xl font-bold text-slate-800 flex items-center gap-2">
-                      <BookOpen className="w-5 h-5 text-emerald-500" /> Course
-                      Outcomes
+                      <BookOpen className="w-5 h-5 text-emerald-500" /> Course Outcomes
                     </h2>
-                    <p className="text-sm text-slate-500 mt-1">
-                      Number of historical questions mapped to each CO.
-                    </p>
+                    <p className="text-sm text-slate-500 mt-1">Number of historical questions mapped to each CO.</p>
                   </div>
-
                   <div className="space-y-6">
                     {courseOutcomes.map((co, idx) => (
                       <div key={co.courseOutcome} className="group">
                         <div className="flex justify-between items-end mb-2">
-                          <span className="font-bold text-slate-700">
-                            Outcome {co.courseOutcome}
-                          </span>
-                          <span className="text-sm font-medium text-slate-500 bg-slate-50 px-2 py-0.5 rounded-md">
-                            {co.count} Qs
-                          </span>
+                          <span className="font-bold text-slate-700">Outcome {co.courseOutcome}</span>
+                          <span className="text-sm font-medium text-slate-500 bg-slate-50 px-2 py-0.5 rounded-md">{co.count} Qs</span>
                         </div>
                         <div className="w-full h-3.5 rounded-full bg-slate-100 overflow-hidden shadow-inner">
                           <motion.div
                             initial={{ width: 0 }}
-                            whileInView={{
-                              width: `${(co.count * 100) / maxCOCount}%`,
-                            }}
+                            whileInView={{ width: `${(co.count * 100) / maxCOCount}%` }}
                             viewport={{ once: true }}
-                            transition={{
-                              duration: 1,
-                              delay: idx * 0.1,
-                              ease: "easeOut",
-                            }}
+                            transition={{ duration: 1, delay: idx * 0.1, ease: "easeOut" }}
                             className="h-full rounded-full bg-gradient-to-r from-emerald-400 to-teal-500 relative"
                           >
-                            <div
-                              className="absolute inset-0 bg-white/20 w-full h-full rounded-full"
-                              style={{
-                                backgroundImage:
-                                  "linear-gradient(45deg,rgba(255,255,255,.15) 25%,transparent 25%,transparent 50%,rgba(255,255,255,.15) 50%,rgba(255,255,255,.15) 75%,transparent 75%,transparent)",
-                                backgroundSize: "1rem 1rem",
-                              }}
-                            ></div>
+                            <div className="absolute inset-0 bg-white/20 w-full h-full rounded-full" style={{ backgroundImage: "linear-gradient(45deg,rgba(255,255,255,.15) 25%,transparent 25%,transparent 50%,rgba(255,255,255,.15) 50%,rgba(255,255,255,.15) 75%,transparent 75%,transparent)", backgroundSize: "1rem 1rem" }}></div>
                           </motion.div>
                         </div>
                       </div>
@@ -538,42 +442,145 @@ function StudentAnalytics() {
             </motion.div>
           )}
         </AnimatePresence>
-        <div className="mt-8 bg-white rounded-2xl border shadow-sm p-6">
-          <div className="mb-6">
-            <h2 className="text-2xl font-semibold">Previous Questions</h2>
 
-            <p className="text-slate-500 mt-1">
-              Browse previously asked examination questions.
-            </p>
-          </div>
-
-          <div className="space-y-5">
-            {questions.map((question) => (
-              <div
-                key={question.id}
-                className="border rounded-xl p-5 hover:bg-slate-50 transition"
-              >
-                <div className="flex flex-wrap gap-2 mb-3">
-                  <span className="bg-blue-100 text-blue-700 px-3 py-1 rounded-full text-xs">
-                    {question.topic}
-                  </span>
-
-                  <span className="bg-green-100 text-green-700 px-3 py-1 rounded-full text-xs">
-                    {question.marks} Marks
-                  </span>
-
-                  <span className="bg-orange-100 text-orange-700 px-3 py-1 rounded-full text-xs">
-                    CO {question.courseOutcome}
-                  </span>
+        {/* --- QUESTIONS SECTION WITH FILTERING & PAGINATION --- */}
+        {questions.length > 0 && (
+          <motion.div
+            variants={itemVariants}
+            initial="hidden"
+            animate="show"
+            className="mt-8 bg-white rounded-3xl border border-slate-100 shadow-sm p-6 lg:p-8"
+          >
+            {/* Header & Filters */}
+            <div className="mb-6">
+              <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
+                <div>
+                  <h2 className="text-xl font-bold text-slate-800 flex items-center gap-2">
+                    <FileQuestion className="w-5 h-5 text-indigo-500" />
+                    Previous Questions Archive
+                  </h2>
+                  <p className="text-sm text-slate-500 mt-1">
+                    Browse previously asked examination questions mapped to topics and outcomes.
+                  </p>
                 </div>
-
-                <p className="leading-7 text-slate-700">
-                  {question.questionText}
-                </p>
+                
+                <div className="flex items-center gap-2 text-sm font-medium text-slate-600">
+                  <Filter className="w-4 h-4" />
+                  <span>Total: {filteredQuestions.length} Questions</span>
+                </div>
               </div>
-            ))}
-          </div>
-        </div>
+
+              {/* Filter Controls */}
+              <div className="flex flex-wrap items-center gap-3 bg-slate-50 p-4 rounded-2xl border border-slate-100">
+                <select
+                  value={filterTopic}
+                  onChange={(e) => { setFilterTopic(e.target.value); setCurrentPage(1); }}
+                  className="bg-white border border-slate-200 text-slate-700 text-sm rounded-xl focus:ring-indigo-500 focus:border-indigo-500 block p-2.5 outline-none shadow-sm min-w-[150px] flex-1 md:flex-none"
+                >
+                  <option value="">All Topics</option>
+                  {uniqueTopics.map((topic) => (
+                    <option key={topic} value={topic}>{topic}</option>
+                  ))}
+                </select>
+
+                <select
+                  value={filterMarks}
+                  onChange={(e) => { setFilterMarks(e.target.value); setCurrentPage(1); }}
+                  className="bg-white border border-slate-200 text-slate-700 text-sm rounded-xl focus:ring-indigo-500 focus:border-indigo-500 block p-2.5 outline-none shadow-sm min-w-[120px] flex-1 md:flex-none"
+                >
+                  <option value="">All Marks</option>
+                  {uniqueMarks.map((mark) => (
+                    <option key={mark} value={mark}>{mark} Marks</option>
+                  ))}
+                </select>
+
+                <select
+                  value={filterCO}
+                  onChange={(e) => { setFilterCO(e.target.value); setCurrentPage(1); }}
+                  className="bg-white border border-slate-200 text-slate-700 text-sm rounded-xl focus:ring-indigo-500 focus:border-indigo-500 block p-2.5 outline-none shadow-sm min-w-[120px] flex-1 md:flex-none"
+                >
+                  <option value="">All Outcomes</option>
+                  {uniqueCOs.map((co) => (
+                    <option key={co} value={co}>CO {co}</option>
+                  ))}
+                </select>
+
+                {(filterTopic || filterMarks || filterCO) && (
+                  <button
+                    onClick={clearFilters}
+                    className="flex items-center gap-1.5 text-sm font-medium text-rose-500 hover:text-rose-600 transition-colors ml-auto p-2"
+                  >
+                    <XCircle className="w-4 h-4" /> Clear Filters
+                  </button>
+                )}
+              </div>
+            </div>
+
+            {/* Questions List */}
+            {paginatedQuestions.length > 0 ? (
+              <div className="space-y-4">
+                {paginatedQuestions.map((question, index) => (
+                  <motion.div
+                    key={question.id}
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.3, delay: index * 0.05 }}
+                    whileHover={{
+                      scale: 1.005,
+                      backgroundColor: "rgba(248, 250, 252, 1)",
+                    }}
+                    className="border border-slate-100 rounded-2xl p-5 lg:p-6 transition-all hover:border-slate-200 hover:shadow-md hover:shadow-slate-100/50 group bg-white"
+                  >
+                    <div className="flex flex-wrap gap-2 mb-4">
+                      <span className="flex items-center gap-1.5 bg-blue-50 text-blue-700 border border-blue-100 px-3 py-1 rounded-full text-xs font-bold tracking-wide">
+                        <Tag className="w-3 h-3" />
+                        {question.topic}
+                      </span>
+                      <span className="flex items-center gap-1.5 bg-emerald-50 text-emerald-700 border border-emerald-100 px-3 py-1 rounded-full text-xs font-bold tracking-wide">
+                        <Award className="w-3 h-3" />
+                        {question.marks} Marks
+                      </span>
+                      <span className="flex items-center gap-1.5 bg-amber-50 text-amber-700 border border-amber-100 px-3 py-1 rounded-full text-xs font-bold tracking-wide">
+                        <BookOpen className="w-3 h-3" />
+                        CO {question.courseOutcomes}
+                      </span>
+                    </div>
+                    <p className="leading-relaxed text-slate-700 font-medium group-hover:text-slate-900 transition-colors">
+                      {question.questionText}
+                    </p>
+                  </motion.div>
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-12 text-slate-500 font-medium bg-slate-50 rounded-2xl border border-slate-100 border-dashed">
+                No questions found matching your filters.
+              </div>
+            )}
+
+            {/* Pagination Controls */}
+            {totalPages > 1 && (
+              <div className="mt-8 flex items-center justify-between border-t border-slate-100 pt-6">
+                <button
+                  onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                  disabled={currentPage === 1}
+                  className="flex items-center gap-1 px-4 py-2 rounded-xl text-sm font-semibold text-slate-600 bg-slate-50 hover:bg-slate-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                >
+                  <ChevronLeft className="w-4 h-4" /> Previous
+                </button>
+                <div className="text-sm font-medium text-slate-500">
+                  Page <span className="text-slate-900 font-bold">{currentPage}</span> of <span className="text-slate-900 font-bold">{totalPages}</span>
+                </div>
+                <button
+                  onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+                  disabled={currentPage === totalPages}
+                  className="flex items-center gap-1 px-4 py-2 rounded-xl text-sm font-semibold text-slate-600 bg-slate-50 hover:bg-slate-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                >
+                  Next <ChevronRight className="w-4 h-4" />
+                </button>
+              </div>
+            )}
+          </motion.div>
+        )}
       </div>
     </DashboardLayout>
   );
