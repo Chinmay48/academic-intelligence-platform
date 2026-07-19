@@ -13,6 +13,7 @@ import UploadDocument from "../features/documents/UploadDocument";
 import StudentChat from "../features/chat/StudentChat";
 import UploadPYQ from "../features/pyq/UploadPYQ";
 import StudentAnalytics from "../features/analytics/StudentAnalytics";
+import DepartmentManagement from "../features/department/DepartmentManagement";
 function AppRoutes() {
   return (
     <Routes>
@@ -53,6 +54,13 @@ function AppRoutes() {
             <StudentAnalytics/>
         </RoleRoute>
       </ProtectedRoute>}/>
+      <Route path="/admin/departments" element={<ProtectedRoute>
+        <RoleRoute allowedRoles={[ROLE.ADMIN]}>
+            <DepartmentManagement/>
+        </RoleRoute>
+      </ProtectedRoute>}/>
+
+
       
     </Routes>
   )

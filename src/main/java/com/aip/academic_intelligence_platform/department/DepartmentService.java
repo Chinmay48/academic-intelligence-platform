@@ -40,9 +40,12 @@ public class DepartmentService {
 
     public  DepartmentResponse updateDepartmentById( DepartmentRequest request,  String id){
         Department department=departmentRepository.findById(id).orElseThrow(()-> new ResourceNotFoundException("Department not found"));
-        if(departmentRepository.existsByName(request.name())){
-            throw new DepartmentAlreadyException("Department already exist");
-        }
+        Department existing =
+        departmentRepository.findByName(request.name()).orElse(null);
+
+if (existing != null && !existing.getId().equals(id)) {
+    throw new DepartmentAlreadyException("Department already exists");
+}
         department.setName(request.name());
         departmentRepository.save(department);
         return  new DepartmentResponse(department.getId(),department.getName());
