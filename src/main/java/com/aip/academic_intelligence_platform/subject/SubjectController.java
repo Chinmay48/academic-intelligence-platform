@@ -34,4 +34,22 @@ public class SubjectController {
        public ResponseEntity<List<SubjectResponse>> getAllSubjectsByDepartment(@PathVariable String departmentId){
            return ResponseEntity.status(HttpStatus.OK).body(subjectService.getSubjectsByDepartment(departmentId));
        }
+
+       @PutMapping("/{id}")
+@PreAuthorize("hasRole('ADMIN')")
+public ResponseEntity<SubjectResponse> updateSubject(
+        @PathVariable String id,
+        @RequestBody SubjectRequest request
+){
+    return ResponseEntity.ok(subjectService.updateSubject(id, request));
+}
+
+@DeleteMapping("/{id}")
+@PreAuthorize("hasRole('ADMIN')")
+public ResponseEntity<Void> deleteSubject(@PathVariable String id){
+    subjectService.deleteSubjectById(id);
+    return ResponseEntity.noContent().build();
+}
+
+
 }

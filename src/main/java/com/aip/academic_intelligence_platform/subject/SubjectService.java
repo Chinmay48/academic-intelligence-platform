@@ -41,4 +41,40 @@ public class SubjectService {
                 .stream()
                 .map(subject -> new SubjectResponse(subject.getId(),subject.getName(),subject.getDepartment().getId(),subject.getDepartment().getName())).toList();
     }
+    public SubjectResponse updateSubject(String subjectId, SubjectRequest request) {
+
+    Subject subject = subjectRepository.findById(subjectId)
+            .orElseThrow(() -> new ResourceNotFoundException("Subject not found"));
+
+    Department department = departmentRepository.findById(request.departmentId())
+            .orElseThrow(() -> new ResourceNotFoundException("Department not found"));
+
+    Subject existing = subjectRepository
+            .findByNameAndDepartmentId(request.name(), request.departmentId())
+            .orElse(null);
+
+    if (existing != null && !existing.getId().equals(subjectId)) {
+        throw new SubjectAlreadyExistsException("Subject already exists");
+    }
+
+    subject.setName(request.name());
+    subject.setDepartment(department);
+
+    Subject updatedSubject = subjectRepository.save(subject);
+
+    return new SubjectResponse(
+            updatedSubject.getId(),
+            updatedSubject.getName(),
+            updatedSubject.getDepartment().getId(),
+            updatedSubject.getDepartment().getName()
+    );
+}
+
+    public void deleteSubjectById(String subjectId){
+        Subject subject=subjectRepository.findById(subjectId).orElseThrow(()->new ResourceNotFoundException("Subject not found"));
+        subjectRepository.delete(subject);
+    }
+
+
+
 }
