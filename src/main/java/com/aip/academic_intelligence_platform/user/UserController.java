@@ -12,7 +12,7 @@ import java.util.List;
 @RequestMapping("/api/users")
 @RequiredArgsConstructor
 public class UserController {
-    private UserService userService;
+    private final UserService userService;
      @GetMapping()
      @PreAuthorize("hasRole('ADMIN')")
      public ResponseEntity<List<UserResponse>> getAllUsers(){

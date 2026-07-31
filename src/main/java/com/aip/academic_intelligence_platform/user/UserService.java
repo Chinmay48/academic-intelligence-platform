@@ -13,7 +13,7 @@ import static java.util.stream.Collectors.toList;
 @Service
 @RequiredArgsConstructor
 public class UserService {
-    private  UserRespository userRespository;
+    private final UserRespository userRespository;
     public List<UserResponse> getAllUsers(){
         return userRespository.findAllByOrderByCreatedAtDesc()
                 .stream()

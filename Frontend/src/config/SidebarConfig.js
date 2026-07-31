@@ -1,4 +1,4 @@
-import {icons, LayoutDashboard,Bot,BookOpenText,ChartNoAxesCombined,FileQuestionMark,Building2,GraduationCap} from "lucide-react"
+import {icons, LayoutDashboard,Bot,BookOpenText,ChartNoAxesCombined,FileQuestionMark,Building2,GraduationCap,User2} from "lucide-react"
 export const sidebarItems={
     STUDENT:[
       {label:"Dashboard",path:"/student/dashboard",icon:LayoutDashboard},
@@ -15,6 +15,6 @@ export const sidebarItems={
       {label:"Dashboard",path:"/admin/dashboard",icon:LayoutDashboard},
       {label:"Departments",path:"/admin/departments",icon:Building2},
       {label:"Subjects",path:"/admin/subjects",icon:BookOpenText},
-
+      {label:"Users",path:"/admin/users",icon:User2},
     ]
   }

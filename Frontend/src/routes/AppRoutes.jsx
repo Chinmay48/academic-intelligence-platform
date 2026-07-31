@@ -15,6 +15,7 @@ import UploadPYQ from "../features/pyq/UploadPYQ";
 import StudentAnalytics from "../features/analytics/StudentAnalytics";
 import DepartmentManagement from "../features/department/DepartmentManagement";
 import SubjectManagement from "../features/subject/SubjectManagement";
+import UserManagement from "../features/UserManagement";
 function AppRoutes() {
   return (
     <Routes>
@@ -63,6 +64,11 @@ function AppRoutes() {
       <Route path="/admin/subjects" element={<ProtectedRoute>
         <RoleRoute allowedRoles={[ROLE.ADMIN]}>
             <SubjectManagement/>
+        </RoleRoute>
+      </ProtectedRoute>}/>
+      <Route path="/admin/users" element={<ProtectedRoute>
+        <RoleRoute allowedRoles={[ROLE.ADMIN]}>
+            <UserManagement/>
         </RoleRoute>
       </ProtectedRoute>}/>
 

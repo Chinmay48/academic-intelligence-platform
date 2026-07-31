@@ -1,4 +1,4 @@
-import { data } from "react-router-dom";
+
 import api from "../utils/axios";
 
 export const getAllDepartments=async()=>{
