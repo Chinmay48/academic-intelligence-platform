@@ -1,32 +1,33 @@
 package com.aip.academic_intelligence_platform.user;
 
+import com.aip.academic_intelligence_platform.user.dto.UserResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/users")
+@RequiredArgsConstructor
 public class UserController {
-     @GetMapping("/test")
-     public String test(){
-         return "Protected Endpoint";
+    private UserService userService;
+     @GetMapping()
+     @PreAuthorize("hasRole('ADMIN')")
+     public ResponseEntity<List<UserResponse>> getAllUsers(){
+           return  ResponseEntity.ok(userService.getAllUsers());
+     }
+     @GetMapping("/{id}")
+     @PreAuthorize("hasRole('ADMIN')")
+     public ResponseEntity<UserResponse> getUserById(@PathVariable String id){
+         return  ResponseEntity.ok(userService.getUserById(id));
      }
 
-     @GetMapping("/student")
-     @PreAuthorize("hasRole('STUDENT')")
-     public String student(){
-         return "Student access";
+     @DeleteMapping("/{id}")
+     @PreAuthorize("hasRole('ADMIN')")
+     public ResponseEntity<Void> deleteUserById(@PathVariable String id){
+         userService.deleteUser(id);
+         return  ResponseEntity.noContent().build();
      }
-    @GetMapping("/faculty")
-    @PreAuthorize("hasRole('FACULTY')")
-    public String faculty(){
-        return "Faculty access";
-    }
-    @GetMapping("/admin")
-    @PreAuthorize("hasRole('admin')")
-    public String admin(){
-        return "admin access";
-    }
 }
