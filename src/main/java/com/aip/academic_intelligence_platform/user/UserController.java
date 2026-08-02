@@ -1,5 +1,6 @@
 package com.aip.academic_intelligence_platform.user;
 
+import com.aip.academic_intelligence_platform.user.dto.UserRequest;
 import com.aip.academic_intelligence_platform.user.dto.UserResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -29,5 +30,11 @@ public class UserController {
      public ResponseEntity<Void> deleteUserById(@PathVariable String id){
          userService.deleteUser(id);
          return  ResponseEntity.noContent().build();
+     }
+
+     @PutMapping("/{id}")
+     @PreAuthorize("hasRole('ADMIN')")
+     public ResponseEntity<UserResponse> updateUser(@RequestBody UserRequest user,@PathVariable String id){
+        return ResponseEntity.ok(userService.updateUser(user, id));
      }
 }
