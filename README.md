@@ -1280,114 +1280,57 @@ A representative response contains:
 ```
 
 ------------------------------------------------------------------------
-
 # Screenshots
-
-Add actual application screenshots here. A recommended order is shown
-below.
 
 ## 1. Login
 
-```{=html}
-<!--
 ![Login](docs/screenshots/login.png)
--->
-```
+
 ## 2. Student Dashboard
 
-```{=html}
-<!--
 ![Student Dashboard](docs/screenshots/student-dashboard.png)
--->
-```
+
 ## 3. Academic RAG Chat
 
-```{=html}
-<!--
-![RAG Chat](docs/screenshots/rag-chat.png)
--->
-```
-## 4. Conversation History
+![Academic RAG Chat](docs/screenshots/rag-chat.png)
 
-```{=html}
-<!--
-![Conversation History](docs/screenshots/conversation-history.png)
--->
-```
-## 5. PYQ Intelligence
+## 4. PYQ Intelligence
 
-```{=html}
-<!--
-![PYQ Intelligence](docs/screenshots/pyq-intelligence.png)
--->
-```
-## 6. Faculty Resource Upload
+### PYQ Analytics Overview
 
-```{=html}
-<!--
-![Faculty Upload](docs/screenshots/faculty-upload.png)
--->
-```
-## 7. PYQ Upload
+![PYQ Intelligence Overview](docs/screenshots/pyq-intellisense-1.png)
 
-```{=html}
-<!--
-![PYQ Upload](docs/screenshots/pyq-upload.png)
--->
-```
-## 8. Admin Dashboard
+### Topic Analysis
 
-```{=html}
-<!--
-![Admin Dashboard](docs/screenshots/admin-dashboard.png)
--->
-```
-## 9. Department Management
+![PYQ Topic Analysis](docs/screenshots/pyq-intellisense-2.png)
 
-```{=html}
-<!--
-![Department Management](docs/screenshots/department-management.png)
--->
-```
-## 10. Subject Management
+### Examination Pattern Analysis
 
-```{=html}
-<!--
-![Subject Management](docs/screenshots/subject-management.png)
--->
-```
-## 11. User Management
+![PYQ Examination Pattern](docs/screenshots/pyq-intellisense-3.png)
 
-```{=html}
-<!--
-![User Management](docs/screenshots/user-management.png)
--->
-```
-## 12. Profile
+### Expected Topics & Predictions
 
-```{=html}
-<!--
-![Profile](docs/screenshots/profile.png)
--->
-```
-Recommended repository structure:
+![PYQ Predictions](docs/screenshots/pyq-intellisense-4.png)
 
-``` text
-docs/
-└── screenshots/
-    ├── login.png
-    ├── student-dashboard.png
-    ├── rag-chat.png
-    ├── conversation-history.png
-    ├── pyq-intelligence.png
-    ├── faculty-upload.png
-    ├── pyq-upload.png
-    ├── admin-dashboard.png
-    ├── department-management.png
-    ├── subject-management.png
-    ├── user-management.png
-    └── profile.png
-```
+## 5. Faculty Resource Upload
+
+![Faculty Resource Upload](docs/screenshots/faculty-upload-resource.png)
+
+## 6. Faculty PYQ Upload
+
+![Faculty PYQ Upload](docs/screenshots/faculty-upload-pyq.png)
+
+## 7. Department Management
+
+![Department Management](docs/screenshots/admin-department-management.png)
+
+## 8. Subject Management
+
+![Subject Management](docs/screenshots/admin-subject-management.png)
+
+## 9. User Management
+
+![User Management](docs/screenshots/admin-user-management.png)
 
 ------------------------------------------------------------------------
 
