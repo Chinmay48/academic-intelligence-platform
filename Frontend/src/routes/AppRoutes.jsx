@@ -16,12 +16,17 @@ import StudentAnalytics from "../features/analytics/StudentAnalytics";
 import DepartmentManagement from "../features/department/DepartmentManagement";
 import SubjectManagement from "../features/subject/SubjectManagement";
 import UserManagement from "../features/UserManagement";
+import Profile from "../components/common/Profile";
 function AppRoutes() {
   return (
     <Routes>
       <Route path="/" element={<Navigate to="/login"/>}/>
       <Route path="/login" element={<Login/>}/>
       <Route path="/register" element={<Register/>}/>
+      <Route
+  path="/profile"
+  element={<Profile />}
+/>
       <Route path="/student/dashboard" element={<ProtectedRoute>
         <RoleRoute allowedRoles={[ROLE.STUDENT]}/>
         <StudentDashboard/>

@@ -77,126 +77,138 @@ public class ChatService {
         }
 
 
-        // 3. Get previous messages of THIS conversation
+        // 3. Get PREVIOUS conversation history
 
-        List<Message> history =
-                memoryService.getRecentMessages(
-                        conversation.getId()
-                );
-
-
-        // 4. Rewrite follow-up question using conversation history
-
-        String effectiveQuestion =
-                quereyRewriteService.rewriteQuestion(
-                        question,
-                        history
-                );
-
-
-        // 5. Retrieve relevant chunks
-
-        List<RetrivedChunk> chunks =
-                retrievalService.retrieve(
-                        effectiveQuestion,
-                        student.getDepartment().getId()
-                );
-
-
-        // 6. Save user message
-
-        memoryService.addMessage(
-                conversation,
-                "USER",
-                question
-        );
-
-
-        // 7. No chunks found
-
-        if (chunks.isEmpty()) {
-
-            String answer =
-                    "No relevant academic resource found.";
-
-            memoryService.addMessage(
-                    conversation,
-                    "ASSISTANT",
-                    answer
-            );
-
-            return new ChatResponse(
-                    answer,
-                    List.of(),
-                    conversation.getId()
-            );
-        }
-
-
-        // 8. Similarity validation
-
-        double bestSimilarity =
-                chunks.get(0).similarity();
-
-
-        if (bestSimilarity < 0.65) {
-
-            String answer =
-                    "No relevant academic resource found for this question.";
-
-            memoryService.addMessage(
-                    conversation,
-                    "ASSISTANT",
-                    answer
-            );
-
-            return new ChatResponse(
-                    answer,
-                    List.of(),
-                    conversation.getId()
-            );
-        }
-
-
-        // 9. Get updated history including current user question
-
-        List<Message> updatedHistory =
-                memoryService.getRecentMessages(
-                        conversation.getId()
-                );
-
-
-        // 10. Build RAG prompt
-
-        String prompt =
-                promptBuilder.buildPrompt(
-                        question,
-                        chunks,
-                        updatedHistory
-                );
-
-
-        // 11. Generate answer
-
-        String answer =
-                chatClient.generateAnswer(prompt);
-
-
-        // 12. Save assistant answer
-
-        memoryService.addMessage(
-                conversation,
-                "ASSISTANT",
-                answer
-        );
-
-
-        // 13. Return response
-
-        return new ChatResponse(
-                answer,
-                citationService.buildCitations(chunks),
+List<Message> history =
+        memoryService.getRecentMessages(
                 conversation.getId()
         );
+
+
+
+System.out.println("\n========== HISTORY FROM DATABASE ==========");
+
+for (int i = 0; i < history.size(); i++) {
+    Message m = history.get(i);
+
+    System.out.println(
+            i + " | " +
+            m.getCreatedAt() + " | " +
+            m.getRole() + " | " +
+            m.getContent()
+    );
+}
+
+System.out.println("============================================\n");
+String effectiveQuestion =
+        quereyRewriteService.rewriteQuestion(
+                question,
+                history
+        );
+
+System.out.println(
+        "Original Question: " + question
+);
+
+System.out.println(
+        "Effective Question: " + effectiveQuestion
+);
+
+
+// 5. Retrieve using standalone question
+
+List<RetrivedChunk> chunks =
+        retrievalService.retrieve(
+                effectiveQuestion,
+                student.getDepartment().getId()
+        );
+
+
+// 6. Save ORIGINAL user message
+
+memoryService.addMessage(
+        conversation,
+        "USER",
+        question
+);
+
+
+// 7. No chunks
+
+if (chunks.isEmpty()) {
+
+    String answer =
+            "No relevant academic resource found.";
+
+    memoryService.addMessage(
+            conversation,
+            "ASSISTANT",
+            answer
+    );
+
+    return new ChatResponse(
+            answer,
+            List.of(),
+            conversation.getId()
+    );
+}
+
+
+// 8. Similarity
+
+double bestSimilarity =
+        chunks.get(0).similarity();
+
+if (bestSimilarity < 0.65) {
+
+    String answer =
+            "No relevant academic resource found for this question.";
+
+    memoryService.addMessage(
+            conversation,
+            "ASSISTANT",
+            answer
+    );
+
+    return new ChatResponse(
+            answer,
+            List.of(),
+            conversation.getId()
+    );
+}
+
+
+// 9. Build prompt using RESOLVED question
+
+String prompt =
+        promptBuilder.buildPrompt(
+                effectiveQuestion,
+                chunks,
+                history
+        );
+
+
+// 10. Generate
+
+String answer =
+        chatClient.generateAnswer(prompt);
+
+
+// 11. Save answer
+
+memoryService.addMessage(
+        conversation,
+        "ASSISTANT",
+        answer
+);
+
+
+// 12. Response
+
+return new ChatResponse(
+        answer,
+        citationService.buildCitations(chunks),
+        conversation.getId()
+);
     }
 }

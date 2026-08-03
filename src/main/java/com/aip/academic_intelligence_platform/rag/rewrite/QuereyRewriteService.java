@@ -12,59 +12,97 @@ import java.util.List;
 @RequiredArgsConstructor
 public class QuereyRewriteService {
     private final GeminiChatClient chatClient;
-    public String rewriteQuestion(String currentQuestion, List<Message> history){
-        if(history==null || history.isEmpty()){
-            return currentQuestion;
-        }
-        StringBuilder conversation=new StringBuilder();
-        history.forEach(message -> {
-            conversation.append(message.getRole());
-            conversation.append(": ");
-            conversation.append(message.getContent());
-            conversation.append("\n");
-        });
-        String prompt="""
+    public String rewriteQuestion(
+        String currentQuestion,
+        List<Message> history
+) {
+
+    if (history == null || history.isEmpty()) {
+        return currentQuestion;
+    }
+
+    // Only recent messages are relevant for resolving
+    // references such as "it", "this", "that", etc.
+    int start = Math.max(
+            0,
+            history.size() - 4
+    );
+
+    List<Message> recentHistory =
+            history.subList(
+                    start,
+                    history.size()
+            );
+System.out.println("\n========= REWRITE HISTORY =========");
+
+recentHistory.forEach(message -> {
+
+    System.out.println(
+            message.getCreatedAt()
+            + " | "
+            + message.getRole()
+            + " | "
+            + message.getContent()
+    );
+});
+
+System.out.println("===================================\n");
+    StringBuilder conversation =
+            new StringBuilder();
+
+    recentHistory.forEach(message -> {
+
+        conversation
+                .append(message.getRole())
+                .append(": ")
+                .append(message.getContent())
+                .append("\n");
+    });
+
+    String prompt = """
 You are a query rewriting assistant for a RAG system.
 
-Your job is to determine whether the current question depends on previous conversation context.
+Your ONLY task is to convert a context-dependent question
+into a standalone question.
 
 RULES:
 
-1. If the current question is already complete and self-contained:
-   Return it EXACTLY as it is.
+1. If the current question is already complete and self-contained,
+   return it EXACTLY as it is.
 
-2. If the current question depends on previous conversation:
-   Rewrite it into a complete standalone question.
+2. If the current question contains references such as:
+   "it", "its", "this", "that", "they", "them",
+   resolve the reference using the MOST RECENT relevant topic.
 
-3. Do not answer the question.
+3. Conversation history is chronological.
+   The messages at the BOTTOM are the MOST RECENT.
 
-4. Do not explain your reasoning.
+4. Always prefer the most recent user topic when resolving
+   ambiguous references.
 
-5. Return ONLY the final question.
+5. Ignore older unrelated topics.
 
-Examples:
+6. Do NOT answer the question.
 
-Previous Conversation:
-USER: What is Linear Regression?
+7. Do NOT explain anything.
+
+8. Return ONLY the rewritten question.
+
+Example:
+
+Conversation History:
+
+USER: What is Software Configuration Management?
+ASSISTANT: Software Configuration Management is...
+
+USER: What is Formal Technical Review?
+ASSISTANT: Formal Technical Review is...
 
 Current Question:
-What are its assumptions?
+What are the benefits of it?
 
 Output:
-What are the assumptions of Linear Regression?
-
--------------------------
-
-Previous Conversation:
-USER: What is DBMS?
-
-Current Question:
-Explain normalization.
-
-Output:
-Explain normalization.
-
--------------------------
+What are the benefits of Formal Technical Review?
 
 Conversation History:
 
@@ -73,10 +111,19 @@ Conversation History:
 Current Question:
 
 %s
-""".formatted(conversation,currentQuestion);
-        String rewrittenQuestion=chatClient.generateAnswer(prompt);
-        return rewrittenQuestion.replace("\"","").trim();
 
-    }
+Output:
+""".formatted(
+            conversation,
+            currentQuestion
+    );
+
+    String rewrittenQuestion =
+            chatClient.generateAnswer(prompt);
+
+    return rewrittenQuestion
+            .replace("\"", "")
+            .trim();
+}
 
 }

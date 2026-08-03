@@ -3,7 +3,7 @@ import useAuth from "../../hooks/useAuth";
 import logo from "../../assets/logos/edupilot_logo_transparent edited.PNG";
 import { ChevronDown, LogOut, User, Menu } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-
+import { useNavigate } from "react-router-dom";
 function Navbar({ onMenuClick }) {
   const roleMap = {
     ADMIN: "Administrator",
@@ -15,6 +15,12 @@ function Navbar({ onMenuClick }) {
   const [open, setOpen] = useState(false);
   const dropdownRef = useRef(null);
 
+  const navigate = useNavigate();
+
+  const handleProfile = () => {
+    setOpen(false);
+    navigate("/profile");
+  };
   // Close dropdown when clicking outside
   useEffect(() => {
     function handleClickOutside(event) {
@@ -28,17 +34,20 @@ function Navbar({ onMenuClick }) {
 
   return (
     <header className="sticky top-0 z-20 h-20 bg-white/80 backdrop-blur-md border-b border-slate-200 flex items-center justify-between px-4 md:px-8 shadow-sm">
-      
       {/* Left side: Hamburger (Mobile) + Logo */}
       <div className="flex items-center gap-4">
-        <button 
+        <button
           onClick={onMenuClick}
           className="md:hidden p-2 -ml-2 text-slate-600 hover:bg-slate-100 rounded-lg transition-colors"
         >
           <Menu size={24} />
         </button>
-        
-        <img src={logo} alt="EduPilot" className="h-20 md:h-12 object-fill hidden sm:block" />
+
+        <img
+          src={logo}
+          alt="EduPilot"
+          className="h-20 md:h-12 object-fill hidden sm:block"
+        />
       </div>
 
       {/* Profile Section */}
@@ -52,8 +61,12 @@ function Navbar({ onMenuClick }) {
           </div>
 
           <div className="hidden md:block text-left">
-            <p className="font-semibold text-sm text-slate-800 leading-tight">{user?.name}</p>
-            <p className="text-xs text-slate-500 font-medium">{roleMap[user?.role]}</p>
+            <p className="font-semibold text-sm text-slate-800 leading-tight">
+              {user?.name}
+            </p>
+            <p className="text-xs text-slate-500 font-medium">
+              {roleMap[user?.role]}
+            </p>
           </div>
 
           <ChevronDown
@@ -65,7 +78,7 @@ function Navbar({ onMenuClick }) {
         {/* Dropdown Menu with Framer Motion */}
         <AnimatePresence>
           {open && (
-            <motion.div 
+            <motion.div
               initial={{ opacity: 0, y: 10, scale: 0.95 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: 10, scale: 0.95 }}
@@ -73,7 +86,10 @@ function Navbar({ onMenuClick }) {
               className="absolute right-0 mt-3 w-56 bg-white rounded-2xl shadow-xl shadow-slate-200/50 border border-slate-100 overflow-hidden origin-top-right z-50"
             >
               <div className="p-2 space-y-1">
-                <button className="w-full flex items-center gap-3 px-4 py-2.5 rounded-xl hover:bg-slate-50 text-slate-700 text-sm font-medium transition-colors">
+                <button
+                  onClick={handleProfile}
+                  className="w-full flex items-center gap-3 px-4 py-2.5 rounded-xl hover:bg-slate-50 text-slate-700 text-sm font-medium transition-colors"
+                >
                   <User size={18} className="text-slate-400" />
                   Profile
                 </button>

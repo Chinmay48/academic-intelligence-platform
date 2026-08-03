@@ -22,6 +22,7 @@ public class PromptBuilder {
             chatHistory.append(": ");
             chatHistory.append(message.getContent());
             chatHistory.append("\n");
+            
         }
         for(RetrivedChunk chunk:chunks){
             context.append(chunk.chunkText()).append("\n\n");
