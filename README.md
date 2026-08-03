@@ -28,8 +28,7 @@ patterns without duplicating those insights in unnecessary features.
 -   [System Architecture](#system-architecture)
 -   [End-to-End Data Flows](#end-to-end-data-flows)
 -   [Technology Stack](#technology-stack)
--   [Backend Architecture](#backend-architecture)
--   [Frontend Architecture](#frontend-architecture)
+-   [Project Structure](#project-structure)
 -   [RAG Pipeline](#rag-pipeline)
 -   [Conversation Memory](#conversation-memory)
 -   [PYQ Intelligence Pipeline](#pyq-intelligence-pipeline)
@@ -887,120 +886,418 @@ Typical project tooling includes:
 -   npm for frontend dependency management.
 -   Maven for backend dependency/build management.
 
-Remove any tool from this list that was not actually used.
-
 ------------------------------------------------------------------------
+# 📁 Project Structure
 
-# Backend Architecture
+EduPilot follows a modular architecture on both the frontend and backend.
 
-The backend follows a **feature-oriented package structure** rather than
-grouping all controllers, services, and repositories globally.
+- The **frontend** primarily follows a feature-oriented React structure.
+- The **backend** follows a domain/module-oriented Spring Boot architecture.
+- Core domains such as authentication, documents, RAG, PYQ analytics, departments, subjects, and users are separated into dedicated modules.
 
-Representative structure:
+---
 
-``` text
+## 🎨 Frontend Architecture
+
+```text
+frontend/
+│
+├── src/
+│   │
+│   ├── assets/
+│   │   └── logos/
+│   │       └── edupilot_logo_transparent.png
+│   │
+│   ├── components/
+│   │   │
+│   │   ├── charts/
+│   │   │   ├── COChart.jsx
+│   │   │   ├── MarksChart.jsx
+│   │   │   └── TopicChart.jsx
+│   │   │
+│   │   ├── chat/
+│   │   │   ├── ChatBubble.jsx
+│   │   │   ├── ChatInput.jsx
+│   │   │   ├── ChatMessage.jsx
+│   │   │   ├── CitationCard.jsx
+│   │   │   └── ConversationSidebar.jsx
+│   │   │
+│   │   ├── common/
+│   │   │   ├── Button.jsx
+│   │   │   ├── DashboardCard.jsx
+│   │   │   ├── Input.jsx
+│   │   │   ├── Loading.jsx
+│   │   │   ├── Modal.jsx
+│   │   │   ├── Profile.jsx
+│   │   │   ├── Table.jsx
+│   │   │   └── WelcomeBanner.jsx
+│   │   │
+│   │   ├── documents/
+│   │   │   ├── FileDropZone.jsx
+│   │   │   ├── SelectedFileCard.jsx
+│   │   │   ├── UploadForm.jsx
+│   │   │   └── UploadProgress.jsx
+│   │   │
+│   │   └── layout/
+│   │       ├── AuthLayout.jsx
+│   │       ├── DashboardLayout.jsx
+│   │       ├── Navbar.jsx
+│   │       └── Sidebar.jsx
+│   │
+│   ├── config/
+│   │   └── SidebarConfig.js
+│   │
+│   ├── context/
+│   │   └── AuthContext.jsx
+│   │
+│   ├── features/
+│   │   │
+│   │   ├── analytics/
+│   │   │   ├── Predictions.jsx
+│   │   │   ├── StudentAnalytics.jsx
+│   │   │   └── TopicFrequency.jsx
+│   │   │
+│   │   ├── auth/
+│   │   │   ├── ForgetPassword.jsx
+│   │   │   ├── Login.jsx
+│   │   │   └── Register.jsx
+│   │   │
+│   │   ├── chat/
+│   │   │   └── StudentChat.jsx
+│   │   │
+│   │   ├── dashboard/
+│   │   │   ├── AdminDashboard.jsx
+│   │   │   ├── FacultyDashboard.jsx
+│   │   │   └── StudentDashboard.jsx
+│   │   │
+│   │   ├── department/
+│   │   │   └── DepartmentManagement.jsx
+│   │   │
+│   │   ├── documents/
+│   │   │   ├── DocumentDetails.jsx
+│   │   │   ├── DocumentList.jsx
+│   │   │   └── UploadDocument.jsx
+│   │   │
+│   │   ├── profile/
+│   │   │
+│   │   ├── pyq/
+│   │   │   ├── QuestionPaperDetails.jsx
+│   │   │   ├── QuestionPaperList.jsx
+│   │   │   └── UploadPYQ.jsx
+│   │   │
+│   │   ├── subject/
+│   │   │   └── SubjectManagement.jsx
+│   │   │
+│   │   ├── user/
+│   │   │
+│   │   └── UserManagement.jsx
+│   │
+│   ├── hooks/
+│   │   ├── useAuth.js
+│   │   ├── useAxios.js
+│   │   └── useFileDrop.js
+│   │
+│   ├── routes/
+│   │   ├── AppRoutes.jsx
+│   │   ├── ProtectedRoutes.jsx
+│   │   └── RoleRoutes.jsx
+│   │
+│   ├── services/
+│   │   ├── analyticsService.js
+│   │   ├── authService.js
+│   │   ├── chatService.js
+│   │   ├── dashboardService.js
+│   │   ├── departementService.js
+│   │   ├── documentService.js
+│   │   ├── pyqService.js
+│   │   ├── subjectService.js
+│   │   └── userService.js
+│   │
+│   ├── utils/
+│   │   ├── axios.js
+│   │   ├── constants.js
+│   │   ├── toast.js
+│   │   └── token.js
+│   │
+│   ├── App.css
+│   ├── App.jsx
+│   ├── index.css
+│   └── main.jsx
+│
+└── package.json
+```
+
+### Frontend Module Responsibilities
+
+| Module | Responsibility |
+|---|---|
+| `components` | Reusable UI components used throughout the application |
+| `components/chat` | Chat interface, messages, citations and conversation sidebar |
+| `components/charts` | Visual representation of PYQ analytics |
+| `features/auth` | Login, registration and authentication-related screens |
+| `features/chat` | Student academic RAG chat interface |
+| `features/analytics` | PYQ intelligence and prediction interface |
+| `features/dashboard` | Role-specific dashboards |
+| `features/documents` | Academic resource viewing and uploading |
+| `features/pyq` | Previous question paper management |
+| `features/department` | Department administration |
+| `features/subject` | Subject administration |
+| `services` | Backend REST API communication |
+| `context` | Global authentication state |
+| `routes` | Authentication and role-based route protection |
+| `hooks` | Reusable React hooks |
+| `utils` | Axios configuration, tokens, constants and toast utilities |
+
+---
+
+## ⚙️ Backend Architecture
+
+```text
 src/main/java/com/aip/academic_intelligence_platform/
 │
-├── auth/
-│   ├── dto/
-│   ├── AuthController
-│   └── AuthService
+├── AcademicIntelligencePlatformApplication.java
 │
-├── user/
-│   ├── dto/
-│   ├── User
-│   ├── UserController
-│   ├── UserService
-│   └── UserRepository
+├── analyzer/
+│   ├── CompletenessAnalyzer.java
+│   ├── CoverageAnalyzer.java
+│   ├── MaterialAnalyzerController.java
+│   ├── MissingTopicDetector.java
+│   └── ReadabilityAnalyzer.java
+│
+├── auth/
+│   ├── AuthController.java
+│   ├── AuthRepository.java
+│   ├── AuthService.java
+│   └── dto/
+│       ├── AuthResponse.java
+│       ├── LoginRequest.java
+│       ├── RegisterRequest.java
+│       └── UserProfileResponse.java
+│
+├── common/
+│   ├── enums/
+│   │   ├── ProcessingStatus.java
+│   │   └── Role.java
+│   └── dto/
+│       └── ApiResponse.java
+│
+├── config/
+│   ├── AsyncConfig.java
+│   ├── FileStorageConfig.java
+│   ├── GeminiConfig.java
+│   ├── JacksonConfig.java
+│   ├── LangChainConfig.java
+│   ├── PgVectorConfig.java
+│   └── SwaggerConfig.java
+│
+├── dashboard/
+│   ├── DashboardController.java
+│   ├── DashboardService.java
+│   └── dto/
+│       ├── AdminDashboardResponse.java
+│       ├── FacultyDashboardResponse.java
+│       └── StudentDashboardResponse.java
 │
 ├── department/
-│   ├── dto/
-│   ├── Department
-│   ├── DepartmentController
-│   ├── DepartmentService
-│   └── DepartmentRepository
-│
-├── subject/
-│   ├── dto/
-│   ├── Subject
-│   ├── SubjectController
-│   ├── SubjectService
-│   └── SubjectRepository
+│   ├── Department.java
+│   ├── DepartmentController.java
+│   ├── DepartmentRepository.java
+│   ├── DepartmentService.java
+│   └── dto/
+│       ├── DepartmentRequest.java
+│       └── DepartmentResponse.java
 │
 ├── document/
-├── storage/
+│   ├── Document.java
+│   ├── DocumentChunk.java
+│   ├── DocumentChunkRepository.java
+│   ├── DocumentController.java
+│   ├── DocumentRepository.java
+│   ├── DocumentService.java
+│   ├── DocumentType.java
+│   │
+│   ├── dto/
+│   │   ├── DocumentResponse.java
+│   │   └── DocumentStatusResponse.java
+│   │
+│   └── processing/
+│       ├── DocumentProcessingService.java
+│       │
+│       ├── chunking/
+│       │   └── ChunkingService.java
+│       │
+│       └── extractor/
+│           ├── DocsExtractor.java
+│           ├── DocumentExtractor.java
+│           ├── PDFExtractor.java
+│           └── PPTExtractor.java
+│
 ├── embedding/
+│   ├── EmbeddingParser.java
+│   ├── EmbeddingService.java
+│   ├── GeminiEmbeddingService.java
+│   ├── RetrievalService.java
+│   └── dto/
+│       ├── EmbeddingRequest.java
+│       ├── EmbeddingResponse.java
+│       └── RetrivedChunk.java
+│
+├── exception/
+│   ├── DepartmentAlreadyException.java
+│   ├── GlobalExceptionHandler.java
+│   ├── InvalidFileException.java
+│   ├── ResourceNotFoundException.java
+│   ├── SubjectAlreadyExistsException.java
+│   ├── UnauthorizedException.java
+│   ├── UserAlreadyExistsException.java
+│   └── ValidationException.java
+│
+├── planner/
+│   ├── PlanOptimizer.java
+│   ├── ScheduleGenerator.java
+│   ├── StudyPlannerController.java
+│   └── StudyPlannerService.java
+│
+├── pyq/
+│   ├── ExamQuestion.java
+│   ├── ExamQuestionRepository.java
+│   ├── QuestionPaper.java
+│   ├── QuestionPaperRepository.java
+│   │
+│   ├── analytics/
+│   │   ├── AnalyticsController.java
+│   │   ├── AnalyticsService.java
+│   │   ├── PredictionService.java
+│   │   ├── TopicExtractionService.java
+│   │   └── dto/
+│   │       ├── AnalyticsDashboardResponse.java
+│   │       ├── CourseOutcomeResponse.java
+│   │       ├── MarksDistributionResponse.java
+│   │       ├── PredictionResponse.java
+│   │       ├── TopicExtractionResponse.java
+│   │       ├── TopicExtractListResponse.java
+│   │       └── TopicFrequencyResponse.java
+│   │
+│   ├── controller/
+│   │   └── QuestionPaperController.java
+│   │
+│   ├── dto/
+│   │   ├── ExamQuestionResponse.java
+│   │   ├── ParsedQuestionDto.java
+│   │   ├── ParsedQuestionPaperDto.java
+│   │   ├── QuestionPaperResponse.java
+│   │   ├── VisionRequest.java
+│   │   └── VisionResponse.java
+│   │
+│   ├── parser/
+│   │   ├── GeminiQuestionExtractor.java
+│   │   ├── GeminiVisionOCRService.java
+│   │   ├── GeminiVisionOCRServiceImpl.java
+│   │   ├── OCRService.java
+│   │   ├── PdfImageConverter.java
+│   │   ├── QuestionPaperParserService.java
+│   │   └── SmartOCRService.java
+│   │
+│   └── service/
+│       └── QuestionPaperService.java
 │
 ├── rag/
 │   ├── client/
-│   ├── dto/
-│   ├── memory/
-│   ├── rewrite/
-│   └── service/
-│
-├── pyq/
-│   ├── analytics/
+│   │   ├── GeminiChatClient.java
+│   │   └── GeminiChatClientImpl.java
+│   │
 │   ├── controller/
+│   │   ├── ChatController.java
+│   │   └── ConversationController.java
+│   │
 │   ├── dto/
-│   ├── parser/
+│   │   ├── ChatRequest.java
+│   │   ├── ChatResponse.java
+│   │   ├── CitationDto.java
+│   │   ├── ConversationRequest.java
+│   │   ├── ConversationResponse.java
+│   │   └── MessageResponse.java
+│   │
+│   ├── memory/
+│   │   ├── Conversation.java
+│   │   ├── ConversationRepository.java
+│   │   ├── MemoryService.java
+│   │   ├── Message.java
+│   │   └── MessageRepository.java
+│   │
+│   ├── rewrite/
+│   │   └── QuereyRewriteService.java
+│   │
 │   └── service/
+│       ├── ChatService.java
+│       ├── CitationService.java
+│       └── PromptBuilder.java
 │
-├── dashboard/
 ├── security/
-├── exception/
-├── config/
-└── common/
+│   ├── CustomUserDetailsService.java
+│   ├── JwtFilter.java
+│   ├── JwtService.java
+│   ├── passwordEncoderConfig.java
+│   └── SecurityConfig.java
+│
+├── storage/
+│   ├── CloudinaryStorageService.java
+│   ├── FileStorageService.java
+│   ├── LocalStorageService.java
+│   └── S3StorageService.java
+│
+├── subject/
+│   ├── Subject.java
+│   ├── SubjectController.java
+│   ├── SubjectRepository.java
+│   ├── SubjectService.java
+│   └── dto/
+│       ├── SubjectRequest.java
+│       └── SubjectResponse.java
+│
+├── user/
+│   ├── User.java
+│   ├── UserController.java
+│   ├── UserRespository.java
+│   ├── UserService.java
+│   └── dto/
+│       ├── UserRequest.java
+│       └── UserResponse.java
+│
+└── vectorsearch/
+    ├── CosineSimilarityService.java
+    ├── PgVectorRepository.java
+    └── VectorSearchService.java
 ```
 
-This organization keeps code belonging to the same business capability
-together and makes larger modules such as RAG and PYQ analytics easier
-to maintain.
+> Test/debug controllers and test classes are omitted from the architecture above for readability.
 
-------------------------------------------------------------------------
+---
 
-# Frontend Architecture
+## 🧩 Backend Module Responsibilities
 
-The frontend also favors reusable and feature-oriented organization.
-
-Representative structure:
-
-``` text
-src/
-│
-├── assets/
-│   └── logos/
-│
-├── components/
-│   ├── common/
-│   ├── documents/
-│   └── layout/
-│
-├── context/
-├── hooks/
-├── pages/
-│   └── [feature/role-facing pages]
-│
-├── services/
-│   ├── authService.js
-│   ├── dashboardService.js
-│   ├── documentService.js
-│   ├── subjectService.js
-│   ├── departmentService.js
-│   ├── userService.js
-│   ├── pyqService.js
-│   └── analyticsService.js
-│
-├── utils/
-│   ├── axios.js
-│   └── toast utilities
-│
-└── ...
-```
-
-The API layer is separated from page components so that network
-operations remain reusable and UI code stays focused on rendering and
-interaction.
-
+| Module | Responsibility |
+|---|---|
+| `auth` | Registration, login and authenticated user profile |
+| `security` | JWT authentication, authorization and Spring Security configuration |
+| `user` | User management and administration |
+| `department` | Department CRUD operations |
+| `subject` | Department-specific subject management |
+| `document` | Academic document metadata, upload and processing |
+| `document.processing` | Text extraction and document chunk generation |
+| `embedding` | Embedding generation and retrieval orchestration |
+| `vectorsearch` | PostgreSQL/pgvector similarity search |
+| `rag` | Retrieval-Augmented Generation academic assistant |
+| `rag.memory` | Conversation and message persistence |
+| `rag.rewrite` | Context-aware follow-up query rewriting |
+| `pyq` | Previous question paper processing and storage |
+| `pyq.parser` | OCR, vision processing and structured question extraction |
+| `pyq.analytics` | Topic frequency, marks distribution, CO analysis and predictions |
+| `dashboard` | Role-specific dashboard statistics |
+| `storage` | Abstraction for local/cloud file storage |
+| `config` | Application-wide Spring configurations |
+| `exception` | Centralized exception handling |
+| `common` | Shared enums and common response objects |
 ------------------------------------------------------------------------
 
 # RAG Pipeline
