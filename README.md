@@ -821,58 +821,48 @@ flowchart TD
 ```
 
 ------------------------------------------------------------------------
-
 # Technology Stack
 
 ## Frontend
 
-  Technology                  Purpose
-  --------------------------- ------------------------------------
-  **React**                   Component-based frontend
-  **JavaScript / JSX**        Frontend application logic
-  **Vite**                    Frontend development/build tooling
-  **Tailwind CSS**            Responsive UI styling
-  **Axios**                   REST API communication
-  **React Context API**       Authentication state management
-  **Lucide React**            UI icons
-  **Framer Motion**           UI transitions and animations
-  **Browser Local Storage**   JWT persistence
+| Technology | Purpose |
+|---|---|
+| **React** | Component-based frontend |
+| **JavaScript / JSX** | Frontend application logic |
+| **Vite** | Frontend development and build tooling |
+| **Tailwind CSS** | Responsive UI styling |
+| **Axios** | REST API communication |
+| **React Context API** | Authentication state management |
+| **Lucide React** | UI icons |
+| **Framer Motion** | UI transitions and animations |
+| **Browser Local Storage** | JWT persistence |
 
 ## Backend
 
-  Technology                Purpose
-  ------------------------- ----------------------------------
-  **Java 21**               Backend programming language
-  **Spring Boot 4**         Backend application framework
-  **Spring Web / MVC**      REST APIs
-  **Spring Security**       Authentication and authorization
-  **Spring Data JPA**       Persistence/repository layer
-  **Hibernate**             ORM
-  **Jakarta Persistence**   Entity mapping
-  **Lombok**                Boilerplate reduction
-  **JWT**                   Stateless authentication
-  **Multipart File API**    Document/PYQ upload
+| Technology | Purpose |
+|---|---|
+| **Java 21** | Backend programming language |
+| **Spring Boot 4** | Backend application framework |
+| **Spring Web / MVC** | REST API development |
+| **Spring Security** | Authentication and authorization |
+| **Spring Data JPA** | Persistence and repository layer |
+| **Hibernate** | Object-relational mapping (ORM) |
+| **Jakarta Persistence** | Entity mapping |
+| **Lombok** | Boilerplate code reduction |
+| **JWT** | Stateless authentication |
+| **Multipart File API** | Document and PYQ uploads |
 
 ## Data & AI
 
-  -----------------------------------------------------------------------
-  Technology                          Purpose
-  ----------------------------------- -----------------------------------
-  **PostgreSQL**                      Relational data, document chunks and serialized embeddings
+| Technology | Purpose |
+|---|---|
+| **PostgreSQL** | Relational data, document chunks, and serialized embeddings |
+| **Gemini Embedding 001** | Embedding generation for academic chunks and queries |
+| **Gemini 2.5 Flash** | Answer generation, query rewriting, and vision/OCR-assisted processing |
+| **Java Cosine Similarity** | Application-side semantic similarity calculation |
+| **RAG** | Grounded academic question answering |
 
-  **Gemini Embedding 001**             Embedding generation for academic chunks and queries
-
-  **Gemini 2.5 Flash**                 Answer generation, query rewriting, vision/OCR-assisted processing
-
-  **Java Cosine Similarity**           Application-side semantic similarity calculation
-
-  **RAG**                              Grounded academic question answering
-  -----------------------------------------------------------------------
-
-> Embeddings are serialized and stored in PostgreSQL with document chunks.
-> The current implementation does not require pgvector or a separate vector database;
-> semantic similarity is calculated in Java using `CosineSimilarityService`.
-
+> **Embedding Storage:** Embeddings are serialized and stored in PostgreSQL with document chunks. The current implementation does not require pgvector or a separate vector database. Semantic similarity is calculated in Java using `CosineSimilarityService`.
 ## Development Tools
 
 Typical project tooling includes:
