@@ -1697,16 +1697,6 @@ gemini.chat.url=https://generativelanguage.googleapis.com/v1beta/models/gemini-2
 gemini.vision.url=https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent
 ```
 
-**Never commit real passwords, API keys, or JWT secrets to GitHub.**
-
-For a public repository, prefer environment-variable-backed properties,
-for example:
-
-``` properties
-spring.datasource.password=${DB_PASSWORD}
-jwt.secret=${JWT_SECRET}
-gemini.api.key=${GEMINI_API_KEY}
-```
 
 ## 4. Embedding Storage and Semantic Retrieval
 
@@ -1718,11 +1708,6 @@ Document embeddings are generated with `gemini-embedding-001`, serialized, and s
 Uploaded PDF, PPT/PPTX, and DOC/DOCX resources are stored locally under the repository's `uploads/` directory. `LocalStorageService` automatically creates type-specific folders such as `uploads/pdf`, `uploads/ppt`, and `uploads/doc` when required. Ensure the application has permission to write to this directory.
 
 ## 6. Run the Backend
-
-Navigate to the Spring Boot project:
-
-``` bash
-```
 
 Run:
 
@@ -2082,30 +2067,3 @@ Computer Engineering\
 Thakur College of Engineering and Technology (TCET), Mumbai
 
 ------------------------------------------------------------------------
-
-# License
-
-Add the license selected for the repository.
-
-For example, if you choose MIT:
-
-``` text
-MIT License
-```
-
-and include a separate `LICENSE` file in the repository.
-
-------------------------------------------------------------------------
-
-## Final Pre-Publication Checklist
-
-Before publishing the repository:
-
--   [ ] Confirm final API paths.
--   [ ] Document admin bootstrap/creation procedure.
--   [ ] Add `.env.example` / safe configuration example.
--   [ ] Remove all real API keys, DB passwords and JWT secrets.
--   [ ] Add screenshots under `docs/screenshots/`.
--   [ ] Add repository URL and optional live-demo URL.
--   [ ] Add a `LICENSE`.
--   [ ] Add deployment instructions if the application is deployed.
