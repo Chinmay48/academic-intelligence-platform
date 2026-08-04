@@ -617,7 +617,7 @@ flowchart TB
 
     subgraph DATA["Persistence / AI Infrastructure"]
         PG[(PostgreSQL)]
-        VECTOR[(Vector / Embedding Storage)]
+        COSINE[Java Cosine Similarity]
         FILES[(Uploaded File Storage)]
         GEMINI[Gemini AI Services]
     end
@@ -649,7 +649,8 @@ flowchart TB
     DOC --> PG
     DOC --> FILES
     DOC --> EMB
-    EMB --> VECTOR
+    EMB --> PG
+    EMB --> COSINE
     RAG --> EMB
     RAG --> MEM
     MEM --> PG
@@ -703,7 +704,8 @@ flowchart LR
     EXTRACT[Extract Document Text]
     CHUNK[Split Text into Chunks]
     EMBED[Generate Embeddings]
-    VECTOR[(Embedding / Vector Storage)]
+    DB[(PostgreSQL document_chunks
+Text + Serialized Embeddings)]
 
     F --> UI
     UI -->|Multipart upload| API
@@ -713,7 +715,7 @@ flowchart LR
     STORAGE --> EXTRACT
     EXTRACT --> CHUNK
     CHUNK --> EMBED
-    EMBED --> VECTOR
+    EMBED --> DB
 ```
 
 ## C. Student RAG Question Flow
@@ -856,23 +858,20 @@ flowchart TD
   -----------------------------------------------------------------------
   Technology                          Purpose
   ----------------------------------- -----------------------------------
-  **PostgreSQL**                      Relational application data
+  **PostgreSQL**                      Relational data, document chunks and serialized embeddings
 
-  **Vector / Embedding Storage**      Semantic document retrieval
+  **Gemini Embedding 001**             Embedding generation for academic chunks and queries
 
-  **Gemini API / Gemini Chat Client** Answer generation, query rewriting
-                                      and AI-assisted processing
+  **Gemini 2.5 Flash**                 Answer generation, query rewriting, vision/OCR-assisted processing
 
-  **Embeddings**                      Semantic representation of academic
-                                      chunks
+  **Java Cosine Similarity**           Application-side semantic similarity calculation
 
-  **RAG**                             Grounded academic question
-                                      answering
+  **RAG**                              Grounded academic question answering
   -----------------------------------------------------------------------
 
-> Replace "Vector / Embedding Storage" above with the exact
-> product/extension used in your final implementation (for example
-> pgvector, Pinecone, Qdrant, etc.).
+> Embeddings are serialized and stored in PostgreSQL with document chunks.
+> The current implementation does not require pgvector or a separate vector database;
+> semantic similarity is calculated in Java using `CosineSimilarityService`.
 
 ## Development Tools
 
@@ -1086,9 +1085,6 @@ src/main/java/com/aip/academic_intelligence_platform/
 │   ├── FileStorageConfig.java
 │   ├── GeminiConfig.java
 │   ├── JacksonConfig.java
-│   ├── LangChainConfig.java
-│   ├── PgVectorConfig.java
-│   └── SwaggerConfig.java
 │
 ├── dashboard/
 │   ├── DashboardController.java
@@ -1151,12 +1147,6 @@ src/main/java/com/aip/academic_intelligence_platform/
 │   ├── UnauthorizedException.java
 │   ├── UserAlreadyExistsException.java
 │   └── ValidationException.java
-│
-├── planner/
-│   ├── PlanOptimizer.java
-│   ├── ScheduleGenerator.java
-│   ├── StudyPlannerController.java
-│   └── StudyPlannerService.java
 │
 ├── pyq/
 │   ├── ExamQuestion.java
@@ -1241,10 +1231,8 @@ src/main/java/com/aip/academic_intelligence_platform/
 │   └── SecurityConfig.java
 │
 ├── storage/
-│   ├── CloudinaryStorageService.java
 │   ├── FileStorageService.java
 │   ├── LocalStorageService.java
-│   └── S3StorageService.java
 │
 ├── subject/
 │   ├── Subject.java
@@ -1265,9 +1253,7 @@ src/main/java/com/aip/academic_intelligence_platform/
 │       └── UserResponse.java
 │
 └── vectorsearch/
-    ├── CosineSimilarityService.java
-    ├── PgVectorRepository.java
-    └── VectorSearchService.java
+    └── CosineSimilarityService.java
 ```
 
 > Test/debug controllers and test classes are omitted from the architecture above for readability.
@@ -1286,7 +1272,7 @@ src/main/java/com/aip/academic_intelligence_platform/
 | `document` | Academic document metadata, upload and processing |
 | `document.processing` | Text extraction and document chunk generation |
 | `embedding` | Embedding generation and retrieval orchestration |
-| `vectorsearch` | PostgreSQL/pgvector similarity search |
+| `vectorsearch` | Application-side cosine similarity calculation for stored embeddings |
 | `rag` | Retrieval-Augmented Generation academic assistant |
 | `rag.memory` | Conversation and message persistence |
 | `rag.rewrite` | Context-aware follow-up query rewriting |
@@ -1294,7 +1280,7 @@ src/main/java/com/aip/academic_intelligence_platform/
 | `pyq.parser` | OCR, vision processing and structured question extraction |
 | `pyq.analytics` | Topic frequency, marks distribution, CO analysis and predictions |
 | `dashboard` | Role-specific dashboard statistics |
-| `storage` | Abstraction for local/cloud file storage |
+| `storage` | Local file-storage abstraction for uploaded academic resources |
 | `config` | Application-wide Spring configurations |
 | `exception` | Centralized exception handling |
 | `common` | Shared enums and common response objects |
@@ -1643,9 +1629,7 @@ Install the following before running the application:
 -   **npm**
 -   **PostgreSQL**
 -   Git
--   A valid Gemini API credential
--   The vector/embedding database or PostgreSQL extension used by the
-    final implementation
+-   A valid Gemini API key
 
 Verify installations:
 
@@ -1660,8 +1644,8 @@ git --version
 ## 1. Clone the Repository
 
 ``` bash
-git clone <YOUR_GITHUB_REPOSITORY_URL>
-cd <PROJECT_DIRECTORY>
+git clone https://github.com/Chinmay48/academic-intelligence-platform.git
+cd academic-intelligence-platform
 ```
 
 ## 2. Create the PostgreSQL Database
@@ -1671,10 +1655,10 @@ Create a database for the application.
 Example:
 
 ``` sql
-CREATE DATABASE academic_intelligence_platform;
+CREATE DATABASE aip;
 ```
 
-Use your actual database name if different.
+The default local configuration expects the database name `aip`.
 
 ## 3. Configure the Backend
 
@@ -1689,23 +1673,28 @@ Configure your local values.
 A representative configuration looks like:
 
 ``` properties
-spring.datasource.url=jdbc:postgresql://localhost:5432/academic_intelligence_platform
-spring.datasource.username=YOUR_POSTGRES_USERNAME
-spring.datasource.password=YOUR_POSTGRES_PASSWORD
+spring.application.name=academic-intelligence-platform
+
+spring.datasource.url=jdbc:postgresql://localhost:5432/aip
+spring.datasource.username=postgres
+spring.datasource.password=${DB_PASSWORD}
+spring.datasource.driver-class-name=org.postgresql.Driver
 
 spring.jpa.hibernate.ddl-auto=update
+spring.jpa.show-sql=true
+spring.jpa.properties.hibernate.format_sql=true
 
-# JWT
-jwt.secret=YOUR_SECURE_JWT_SECRET
-jwt.expiration=YOUR_TOKEN_EXPIRATION
+# JWT - 24 hours
+jwt.secret=${JWT_SECRET}
+jwt.expiration=86400000
 
-# Gemini / AI
-# Add the exact property names used by your Gemini client.
-YOUR_GEMINI_PROPERTY=YOUR_GEMINI_API_KEY
-
-# File upload example
 spring.servlet.multipart.max-file-size=25MB
 spring.servlet.multipart.max-request-size=25MB
+
+gemini.api.key=${GEMINI_API_KEY}
+gemini.embedding.url=https://generativelanguage.googleapis.com/v1beta/models/gemini-embedding-001:embedContent
+gemini.chat.url=https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent
+gemini.vision.url=https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent
 ```
 
 **Never commit real passwords, API keys, or JWT secrets to GitHub.**
@@ -1714,36 +1703,25 @@ For a public repository, prefer environment-variable-backed properties,
 for example:
 
 ``` properties
-spring.datasource.username=${DB_USERNAME}
 spring.datasource.password=${DB_PASSWORD}
 jwt.secret=${JWT_SECRET}
-YOUR_GEMINI_PROPERTY=${GEMINI_API_KEY}
+gemini.api.key=${GEMINI_API_KEY}
 ```
 
-## 4. Configure Vector Storage
+## 4. Embedding Storage and Semantic Retrieval
 
-Configure the exact vector/embedding solution used by the project.
-
-If the implementation uses PostgreSQL-based vector storage, ensure the
-required extension/schema is initialized before document ingestion.
-
-> TODO before publishing: document the exact vector database/extension
-> and any required initialization command.
+No separate vector database or PostgreSQL vector extension is required.
+Document embeddings are generated with `gemini-embedding-001`, serialized, and stored in the `embedding` TEXT field of `document_chunks`. During retrieval, the query is embedded and similarity is calculated in Java using `CosineSimilarityService`.
 
 ## 5. Configure File Storage
 
-Ensure the directory/storage configuration expected by
-`FileStorageService` exists and is writable.
-
-> TODO before publishing: add the exact storage property/path used by
-> the final backend.
+Uploaded PDF, PPT/PPTX, and DOC/DOCX resources are stored locally under the repository's `uploads/` directory. `LocalStorageService` automatically creates type-specific folders such as `uploads/pdf`, `uploads/ppt`, and `uploads/doc` when required. Ensure the application has permission to write to this directory.
 
 ## 6. Run the Backend
 
 Navigate to the Spring Boot project:
 
 ``` bash
-cd <BACKEND_DIRECTORY>
 ```
 
 Run:
@@ -1781,7 +1759,7 @@ and APIs are exposed under:
 Open another terminal:
 
 ``` bash
-cd <FRONTEND_DIRECTORY>
+cd Frontend
 npm install
 ```
 
@@ -1851,8 +1829,6 @@ Suggested example:
 
 ``` env
 # Database
-DB_URL=
-DB_USERNAME=
 DB_PASSWORD=
 
 # Security
@@ -1939,9 +1915,7 @@ erDiagram
     }
 ```
 
-> The document/chunk/embedding entities should be added to this ER
-> diagram once their exact final field names and relationships are
-> confirmed from the repository.
+> Document chunks store extracted academic text and serialized embeddings in PostgreSQL. Semantic similarity is evaluated in the application layer.
 
 ------------------------------------------------------------------------
 
@@ -2058,7 +2032,7 @@ Potential extensions, if the project is developed further:
 -   Automated hallucination/groundedness evaluation.
 -   Password reset email/OTP workflow if not already completed.
 -   Cloud object storage for uploaded resources.
--   Production-grade vector database configuration.
+-   Optional migration to pgvector or another indexed vector store if the document corpus grows significantly.
 -   Redis caching.
 -   Rate limiting.
 -   Docker/Docker Compose deployment.
@@ -2127,14 +2101,6 @@ and include a separate `LICENSE` file in the repository.
 
 Before publishing the repository:
 
--   [ ] Replace `<YOUR_GITHUB_REPOSITORY_URL>`.
--   [ ] Replace `<PROJECT_DIRECTORY>`, `<BACKEND_DIRECTORY>`, and
-    `<FRONTEND_DIRECTORY>`.
--   [ ] Confirm exact vector database/extension.
--   [ ] Add exact embedding model/service.
--   [ ] Confirm exact Gemini model and configuration property names.
--   [ ] Add actual database name.
--   [ ] Document file-storage configuration.
 -   [ ] Confirm final API paths.
 -   [ ] Document admin bootstrap/creation procedure.
 -   [ ] Add `.env.example` / safe configuration example.
